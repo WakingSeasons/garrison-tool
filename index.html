@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="description" content="卫戍协议·规程百科：检索干员、盟约、策略与装备，查看机制联动，构建共享阵容。">
+  <title>卫戍协议 · 盟约与阵容研究</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='8' fill='%23212c32'/%3E%3Cpath d='M11 10h18L20 30Z' fill='%2376baa9'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="./styles.css">
+  <script src="./data.js" defer></script>
+  <script src="./alliances.js" defer></script>
+  <script src="./strategy-data.js" defer></script>
+  <script src="./equipment-data.js" defer></script>
+  <script src="./research-data.js" defer></script>
+  <script src="./research-query.js" defer></script>
+  <script src="./filters.js" defer></script>
+  <script src="./workspace.js" defer></script>
+  <script src="./equipment.js" defer></script>
+  <script src="./app.js" defer></script>
+  <script src="./research.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="brand"><span class="brand-mark" aria-hidden="true">▽</span><div><h1>卫戍协议<span class="brand-divider">／</span><span class="brand-subtitle">盟约与阵容研究</span></h1><p>GARRISON PROTOCOL · REGULATIONS</p></div></div>
+    <div class="header-search">
+      <label class="search-field">
+        <span>任意词</span>
+        <input id="header-any-search" type="search" data-search="query" aria-label="任意词搜索" placeholder="搜索盟约、特质、机制、技能…" autocomplete="off">
+        <span class="search-shortcut" aria-hidden="true">⌕</span>
+      </label>
+      <select id="header-search-scope" aria-label="任意词搜索范围" hidden>
+        <option value="primary">左侧</option>
+        <option value="compare">右侧</option>
+      </select>
+    </div>
+    <div class="header-actions">
+      <span class="sample-note" id="operator-total"></span>
+      <button type="button" class="secondary-button" data-research-home>机制联动 <span aria-hidden="true">↗</span></button>
+      <button type="button" class="primary-button" id="add-compare">＋ 并排检索</button>
+    </div>
+  </header>
+  <div class="workspace-strip"><span><span class="status-dot"></span>从盟约找到干员，让组合留在眼前。</span><span id="save-status">本机自动保存</span></div>
+  <div class="encyclopedia-layout" id="encyclopedia-layout">
+    <aside class="encyclopedia-sidebar">
+      <div class="sidebar-heading">
+        <span class="sidebar-name">规程百科</span>
+        <button type="button" id="toggle-sidebar" class="sidebar-toggle" aria-controls="encyclopedia-navigation" aria-expanded="true" aria-label="收起侧栏" title="收起侧栏">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 4v12m11-10-4 4 4 4"/></svg>
+        </button>
+      </div>
+      <nav id="encyclopedia-navigation" aria-label="规程百科分类">
+        <button type="button" data-encyclopedia-section="operators" aria-label="卫戍干员" title="卫戍干员" aria-current="page">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="6" r="3"/><path d="M4 17v-1a6 6 0 0 1 12 0v1z"/></svg>
+          <span class="sidebar-label">卫戍干员</span>
+        </button>
+        <button type="button" data-encyclopedia-section="alliances" aria-label="盟约报告" title="盟约报告">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M8.4 12.6l3.2-5.2m-4.3 1-2 2a3.1 3.1 0 0 0 4.4 4.4l2-2m1-1.2 2-2a3.1 3.1 0 0 0-4.4-4.4l-2 2"/></svg>
+          <span class="sidebar-label">盟约报告</span>
+        </button>
+        <button type="button" data-encyclopedia-section="strategies" aria-label="策略报告" title="策略报告">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 3h3v3h4V3h3v5l-2 2 1 5H6l1-5-2-2zM4 17h12"/></svg>
+          <span class="sidebar-label">策略报告</span>
+        </button>
+        <button type="button" data-encyclopedia-section="enemies" aria-label="敌方资料，后续制作" title="敌方资料 · 后续制作">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="5"/><path d="M10 2v5m0 6v5M2 10h5m6 0h5"/></svg>
+          <span class="sidebar-label">敌方资料</span><span class="sidebar-pending">后续制作</span>
+        </button>
+        <button type="button" data-encyclopedia-section="equipment" aria-label="装备一览" title="装备一览">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m10 2 3 2v3l-3 2-3-2V4zM5.5 9l3 2v3l-3 2-3-2v-3zm9 0 3 2v3l-3 2-3-2v-3z"/></svg>
+          <span class="sidebar-label">装备一览</span>
+        </button>
+        <button type="button" data-encyclopedia-section="presets" aria-label="阵容预设，后续制作" title="阵容保存与预设 · 后续制作">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 3h8l3 3v11H4V3zm2 0v5h6V3M7 17v-5h6v5"/></svg>
+          <span class="sidebar-label">阵容预设</span><span class="sidebar-pending">后续制作</span>
+        </button>
+      </nav>
+    </aside>
+    <main class="encyclopedia-content" aria-label="规程百科内容">
+      <section class="workspace" id="workspace" data-section-panel="operators" aria-label="独立检索与共享阵容工作区"></section>
+      <section class="catalog-page" data-section-panel="alliances" aria-labelledby="alliance-report-title" hidden>
+        <div class="catalog-heading"><p class="eyebrow">ALLIANCE REPORT</p><h2 id="alliance-report-title">盟约报告</h2><p>查看各档激活条件、层数效果与当前阵容的激活进度。</p></div>
+        <div class="catalog-controls">
+          <div class="filter-options" role="group" aria-label="盟约类型">
+            <button type="button" class="filter-button selected" data-catalog-filter="all" aria-pressed="true">全部</button>
+            <button type="button" class="filter-button" data-catalog-filter="core" aria-pressed="false">核心盟约</button>
+            <button type="button" class="filter-button" data-catalog-filter="addon" aria-pressed="false">独立盟约</button>
+          </div>
+          <span class="catalog-count" id="alliance-report-count" aria-live="polite"></span>
+        </div>
+        <div class="catalog-results" id="alliance-report-results" tabindex="0" aria-label="盟约报告检索结果"></div>
+        <footer class="catalog-footer"><a href="https://nga.178.com/read.php?tid=47877197" target="_blank" rel="noopener noreferrer">规程数据 · 原讨论来源 ↗</a></footer>
+      </section>
+      <section class="catalog-page" data-section-panel="strategies" aria-labelledby="strategy-report-title" hidden>
+        <div class="catalog-heading"><p class="eyebrow">STRATEGY REPORT</p><h2 id="strategy-report-title">策略报告</h2><p>查阅策略的初始目标生命值、关联盟约、使用条件和效果。</p></div>
+        <div class="catalog-controls">
+          <div class="filter-options" role="group" aria-label="策略类型">
+            <button type="button" class="filter-button selected" data-catalog-filter="all" aria-pressed="true">全部</button>
+            <button type="button" class="filter-button" data-catalog-filter="general" aria-pressed="false">通用策略</button>
+            <button type="button" class="filter-button" data-catalog-filter="linked" aria-pressed="false">盟约策略</button>
+          </div>
+          <span class="catalog-count" id="strategy-report-count" aria-live="polite"></span>
+        </div>
+        <div class="catalog-results" id="strategy-report-results" tabindex="0" aria-label="策略报告检索结果"></div>
+        <footer class="catalog-footer"><a href="https://nga.178.com/read.php?tid=47877197" target="_blank" rel="noopener noreferrer">规程数据 · 策略一览 ↗</a></footer>
+      </section>
+      <section class="catalog-page" data-section-panel="enemies" aria-labelledby="enemy-report-title" hidden>
+        <div class="catalog-heading"><p class="eyebrow">ENEMY RECORDS</p><h2 id="enemy-report-title">敌方资料</h2></div>
+        <div class="catalog-results pending-content">
+          <div class="pending-card">
+            <span class="pending-badge">后续制作</span>
+          </div>
+        </div>
+      </section>
+      <section class="catalog-page" id="equipment-report" data-section-panel="equipment" aria-labelledby="equipment-title" hidden>
+        <div class="catalog-heading"><p class="eyebrow">GARRISON EQUIPMENT</p><h2 id="equipment-title">装备一览</h2><p>按等阶查看装备，或查阅联合效果、合成方式与占格。</p></div>
+        <div class="equipment-controls">
+          <div class="equipment-filter-row">
+            <div class="equipment-chips" role="group" aria-label="装备浏览方式">
+              <button type="button" data-equipment-view="items" class="selected" aria-pressed="true">按等阶</button>
+              <button type="button" data-equipment-view="combinations" aria-pressed="false">联合装备</button>
+            </div>
+            <div id="equipment-tier-filters" class="equipment-chips" role="group" aria-label="装备等阶"></div>
+            <div id="equipment-combination-filters" class="equipment-chips" role="group" aria-label="联合装备类型" hidden>
+              <button type="button" data-equipment-kind="all" class="selected" aria-pressed="true">全部</button>
+              <button type="button" data-equipment-kind="transfer" aria-pressed="false">转职配装</button>
+              <button type="button" data-equipment-kind="recipe" aria-pressed="false">异名合成</button>
+              <button type="button" data-equipment-kind="upgrade" aria-pressed="false">同名进阶</button>
+            </div>
+          </div>
+          <p id="equipment-count" aria-live="polite"></p>
+        </div>
+        <div class="catalog-results" id="equipment-results" tabindex="0" aria-label="装备检索结果"></div>
+        <footer class="catalog-footer"><a href="https://closure.wiki/zh-cn/stronghold-protocol/3" target="_blank" rel="noopener noreferrer">可露希尔 Wiki · 规程装备 ↗</a></footer>
+      </section>
+      <section class="catalog-page" data-section-panel="presets" aria-labelledby="preset-report-title" hidden>
+        <div class="catalog-heading"><p class="eyebrow">ROSTER PRESETS</p><h2 id="preset-report-title">阵容保存与预设</h2></div>
+        <div class="catalog-results pending-content"><div class="pending-card"><span class="pending-badge">后续制作</span></div></div>
+      </section>
+    </main>
+  </div>
+  <aside class="roster-panel" id="roster-panel" aria-label="共享阵容管理" aria-describedby="roster-instructions">
+    <div class="roster-heading"><div class="roster-title"><span class="roster-icon" aria-hidden="true">▦</span><h2>阵容管理</h2><span class="member-count" id="member-count">0/8</span><span class="shared-label">跨页共用</span></div><div class="roster-heading-actions"><span id="roster-instructions">拖入干员，或点击卡片上的“加入阵容”</span><button type="button" class="text-button" id="toggle-roster" aria-controls="roster-body" aria-expanded="false">展开 ⌃</button></div></div>
+    <div class="roster-summary" id="roster-summary"></div>
+    <div class="roster-body" id="roster-body" hidden>
+      <div class="roster-capacity">
+        <button type="button" id="toggle-personnel-document" class="filter-button" aria-pressed="false">人事部文档</button>
+        <span>六阶装备，使用后上限为 9 人</span>
+      </div>
+      <div class="roster-members" id="roster-members"></div><p class="roster-footnote">按不同干员统计拟上场阵容；人数进度与实际叠层数分别记录。点击盟约查看效果，点 ↗ 在右侧找补位干员。</p>
+    </div>
+  </aside>
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+  <dialog id="transfer-dialog" aria-labelledby="transfer-title">
+    <div class="modal-heading">
+      <div><p class="eyebrow">变形同构体</p><h2 id="transfer-title">转职配装</h2></div>
+      <button type="button" class="icon-button" id="transfer-close" aria-label="关闭转职配装">×</button>
+    </div>
+    <label class="transfer-field" for="transfer-gear">搭配装备</label>
+    <select id="transfer-gear"></select>
+    <div class="transfer-preview" id="transfer-preview" aria-live="polite"></div>
+    <div class="transfer-actions"><button type="button" class="primary-button" id="transfer-apply">应用转职配装</button></div>
+  </dialog>
+  <dialog id="alliance-dialog" aria-labelledby="alliance-dialog-title"><div class="modal-heading"><div><p class="eyebrow">ALLIANCE REFERENCE</p><h2 id="alliance-dialog-title"></h2></div><button type="button" class="icon-button" id="alliance-dialog-close" aria-label="关闭盟约说明">×</button></div><div id="alliance-dialog-content"></div></dialog>
+  <dialog id="relation-dialog" aria-labelledby="relation-title" aria-describedby="relation-description">
+    <div class="relation-panel-heading"><div><p class="eyebrow" id="relation-kind">MECHANISM LIBRARY</p><h2 id="relation-title">机制联动</h2></div><div class="relation-panel-actions"><button type="button" id="relation-back" class="text-button" hidden>← 返回</button><button type="button" class="icon-button" id="relation-close" aria-label="关闭联动面板">×</button></div></div>
+    <div class="relation-panel-intro"><p id="relation-description"></p><p id="relation-context"></p><div class="relation-tip" id="relation-tip" hidden></div></div>
+    <div id="relation-topics" class="relation-topics" aria-label="切换联动词条"></div>
+    <div class="relation-tools" id="relation-tools"><div class="relation-kind-filters" role="group" aria-label="关联条目类型"><button type="button" data-relation-kind="all" class="selected" aria-pressed="true">全部 <span></span></button><button type="button" data-relation-kind="trait" aria-pressed="false">干员特质 <span></span></button><button type="button" data-relation-kind="skill" aria-pressed="false">战斗技能 <span></span></button><button type="button" data-relation-kind="strategy" aria-pressed="false">角色策略 <span></span></button><button type="button" data-relation-kind="other" aria-pressed="false">盟约／装备 <span></span></button></div><label class="relation-search"><span>检索联动</span><input type="search" id="relation-search" placeholder="干员、策略、技能或关联说明…" autocomplete="off"></label><p id="relation-count"></p></div>
+    <div id="relation-content"></div>
+    <div class="relation-panel-footer">联动面板独立于左右筛选。各条目保留具体机制、成立条件和资料依据。</div>
+  </dialog>
+  <noscript><p>请启用 JavaScript，以使用检索、盟约说明和阵容管理。</p></noscript>
+</body>
+</html>
