@@ -19,6 +19,7 @@
   <script src="./equipment.js" defer></script>
   <script src="./app.js" defer></script>
   <script src="./research.js" defer></script>
+  <script src="./site-info.js" defer></script>
 </head>
 <body>
   <header class="site-header">
@@ -35,12 +36,21 @@
       </select>
     </div>
     <div class="header-actions">
-      <span class="sample-note" id="operator-total"></span>
       <button type="button" class="secondary-button" data-research-home>机制联动 <span aria-hidden="true">↗</span></button>
       <button type="button" class="primary-button" id="add-compare">＋ 并排检索</button>
+      <div class="header-utilities" role="group" aria-label="指南与站点信息">
+        <button type="button" class="site-utility guide-trigger" data-open-info aria-haspopup="dialog" aria-controls="quick-start">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 5v12M10 5C8 3 5 3 2 4v11c3-1 6-1 8 2 2-3 5-3 8-2V4c-3-1-6-1-8 1Z"/></svg>
+          新手指南
+        </button>
+        <a class="site-utility author-link" href="https://github.com/WakingSeasons" target="_blank" rel="noopener noreferrer" title="打开作者的 GitHub 主页">
+          <span>作者</span> <strong>WakingSeasons</strong> <span aria-hidden="true">↗</span>
+        </a>
+        <button type="button" class="site-utility version-trigger" id="version-trigger" data-open-info aria-haspopup="dialog" aria-controls="release-notes" title="更新记录">更新记录</button>
+      </div>
     </div>
   </header>
-  <div class="workspace-strip"><span><span class="status-dot"></span>从盟约找到干员，让组合留在眼前。</span><span id="save-status">本机自动保存</span></div>
+  <div class="workspace-strip"><span><span class="status-dot"></span>从盟约找到干员，让组合留在眼前。</span><span class="workspace-status"><span class="sample-note" id="operator-total"></span><span id="save-status">本机自动保存</span></span></div>
   <div class="encyclopedia-layout" id="encyclopedia-layout">
     <aside class="encyclopedia-sidebar">
       <div class="sidebar-heading">
@@ -169,6 +179,94 @@
     <div class="relation-tools" id="relation-tools"><div class="relation-kind-filters" role="group" aria-label="关联条目类型"><button type="button" data-relation-kind="all" class="selected" aria-pressed="true">全部 <span></span></button><button type="button" data-relation-kind="trait" aria-pressed="false">干员特质 <span></span></button><button type="button" data-relation-kind="skill" aria-pressed="false">战斗技能 <span></span></button><button type="button" data-relation-kind="strategy" aria-pressed="false">角色策略 <span></span></button><button type="button" data-relation-kind="other" aria-pressed="false">盟约／装备 <span></span></button></div><label class="relation-search"><span>检索联动</span><input type="search" id="relation-search" placeholder="干员、策略、技能或关联说明…" autocomplete="off"></label><p id="relation-count"></p></div>
     <div id="relation-content"></div>
     <div class="relation-panel-footer">联动面板独立于左右筛选。各条目保留具体机制、成立条件和资料依据。</div>
+  </dialog>
+  <dialog class="info-dialog" id="quick-start" aria-labelledby="quick-start-title" aria-describedby="quick-start-intro">
+    <div class="info-heading">
+      <div>
+        <p class="eyebrow">QUICK START</p>
+        <h2 id="quick-start-title">新手指南</h2>
+      </div>
+      <form method="dialog"><button class="icon-button" aria-label="关闭新手指南" autofocus>×</button></form>
+    </div>
+    <div class="info-body">
+      <p class="guide-intro" id="quick-start-intro"><strong>试着凑出 3 炎</strong><span>点一遍下面的示例。演示独立于你的筛选和阵容。</span></p>
+      <ol class="guide-steps">
+        <li class="guide-step">
+          <h3><span class="guide-number">01</span>按盟约筛干员</h3>
+          <p>展开「筛选条件」，在「核心盟约」选「炎」。知道名字时，直接用「干员名称」搜。</p>
+          <div class="guide-demo">
+            <span class="guide-demo-label">核心盟约</span>
+            <button type="button" class="filter-button guide-chip" data-guide-toggle aria-pressed="false" aria-controls="guide-filter-result">炎</button>
+            <p class="guide-prompt">点「炎」查看示例结果。</p>
+            <div id="guide-filter-result" hidden>
+              <p class="guide-demo-label guide-result-label">示例结果</p>
+              <div class="guide-units">
+                <span><img src="./assets/taraxacum-avatar.webp" width="22" height="22" alt="">风絮</span>
+                <span><img src="./assets/shu-avatar.webp" width="22" height="22" alt="">黍</span>
+                <span><img src="./assets/dusk-avatar.webp" width="22" height="22" alt="">夕</span>
+              </div>
+            </div>
+          </div>
+        </li>
+        <li class="guide-step">
+          <h3><span class="guide-number">02</span>并排看另一个盟约</h3>
+          <p>点风絮卡片上的「聚合」，右边会打开聚合的检索和效果说明，左边保留炎。</p>
+          <div class="guide-demo">
+            <span class="guide-demo-label">风絮 · 炎</span>
+            <button type="button" class="filter-button guide-chip" data-guide-toggle aria-pressed="false" aria-controls="guide-compare-result">聚合</button>
+            <div class="guide-panes">
+              <div class="guide-pane"><strong>左侧 · 炎</strong><span>3、6 人触发</span></div>
+              <div class="guide-pane guide-empty-pane"><strong>右侧</strong><span>等你选盟约</span></div>
+              <div class="guide-pane guide-open-pane" id="guide-compare-result" hidden><strong>右侧 · 聚合</strong><span>2、3 人触发</span></div>
+            </div>
+          </div>
+        </li>
+        <li class="guide-step">
+          <h3><span class="guide-number">03</span>加入阵容，凑人数</h3>
+          <p>在卡片上点「加入阵容」，展开底部「阵容管理」，就能看到各盟约还差几人。</p>
+          <div class="guide-demo">
+            <div class="guide-units">
+              <span><img src="./assets/taraxacum-avatar.webp" width="22" height="22" alt="">风絮</span>
+              <span><img src="./assets/shu-avatar.webp" width="22" height="22" alt="">黍</span>
+              <span id="guide-dusk" hidden><img src="./assets/dusk-avatar.webp" width="22" height="22" alt="">夕</span>
+            </div>
+            <div class="guide-roster-status" id="guide-roster-status" role="status" aria-label="演示阵容盟约进度">
+              <span>炎 <strong id="guide-flame-count"></strong></span>
+              <span id="guide-flame-note"></span>
+            </div>
+            <button type="button" class="secondary-button guide-roster-action" id="guide-roster-action">加入夕</button>
+          </div>
+        </li>
+      </ol>
+      <div class="guide-more">
+        <h3>其它功能在哪儿</h3>
+        <dl>
+          <div><dt>搜索</dt><dd>顶部「任意词」可查特质、盟约等内容，知道名字就用「干员名称」。</dd></div>
+          <div><dt>详情与联动</dt><dd>卡片「详情」有普通和精锐练度，顶部「机制联动」可查关联技能与策略。</dd></div>
+          <div><dt>对照实战</dt><dd>在筛选里录入本局 BAN 位，去侧栏「策略报告」「装备一览」查策略和联合装备。</dd></div>
+        </dl>
+      </div>
+      <form class="info-actions" method="dialog"><button class="primary-button">开始使用</button></form>
+    </div>
+  </dialog>
+  <dialog class="info-dialog" id="release-notes" aria-labelledby="release-notes-title">
+    <div class="info-heading">
+      <div>
+        <p class="eyebrow">CHANGELOG</p>
+        <h2 id="release-notes-title">更新记录</h2>
+      </div>
+      <form method="dialog"><button class="icon-button" aria-label="关闭更新记录" autofocus>×</button></form>
+    </div>
+    <ol class="release-history">
+      <li>
+        <div class="release-heading"><h3>v0.2</h3><span class="release-latest">当前版本</span><time datetime="2026-11-09T15:43:22+08:00">2026-11-09 15:43</time></div>
+        <ul><li>新增可操作的新手指南，演示筛选、并排检索和阵容激活。</li><li>顶部加入作者主页和版本入口，集中查看更新时间和改动。</li></ul>
+      </li>
+      <li>
+        <div class="release-heading"><h3>v0.1</h3><time datetime="2026-11-09T15:29:19+08:00">2026-11-09 15:29</time></div>
+        <ul><li>首发干员筛选、盟约与策略报告、装备一览和阵容管理。</li></ul>
+      </li>
+    </ol>
   </dialog>
   <noscript><p>请启用 JavaScript，以使用检索、盟约说明和阵容管理。</p></noscript>
 </body>

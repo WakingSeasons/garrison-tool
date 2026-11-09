@@ -2,7 +2,7 @@
 
 [打开在线工具](https://wakingseasons.github.io/garrison-tool/)
 
-《明日方舟》卫戍协议·规程的非官方玩家工具。当前为 v0.1 试用版，由 [@WakingSeasons](https://github.com/WakingSeasons) 发布和维护。
+《明日方舟》卫戍协议·规程的非官方玩家工具。当前为 v0.2 试用版，由 [@WakingSeasons](https://github.com/WakingSeasons) 发布和维护。首次使用可点网页顶部的「新手指南」跟着练习。
 
 - 按等阶、盟约、特质和联动词条筛选干员，可并排查看两个检索区和盟约效果。
 - 配队时查看盟约激活人数和下一档门槛，支持转职装备和手动标记本局 BAN 位。
