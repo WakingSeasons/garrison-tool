@@ -249,9 +249,15 @@
       ['linked', '盟约策略', strategy => !!strategy.alliance]
     ].filter(([key]) => selected === 'all' || selected === key).map(([, title, inGroup]) => {
       const cards = strategies.filter(strategy => inGroup(strategy) && matches(
-        strategy.name, strategy.effect, strategy.alliance || '', title, `${strategy.initialLife}点`
+        strategy.name, strategy.characterName, strategy.effect, strategy.alliance || '', title, `${strategy.initialLife}点`
       )).map(strategy => `<article class="catalog-card" data-report-strategy="${escapeHtml(strategy.name)}">
-        <div class="catalog-card-heading"><h4>${escapeHtml(strategy.name)}</h4>${strategy.alliance ? `<span class="catalog-tag">${escapeHtml(strategy.alliance)}</span>` : ''}</div>
+        <div class="catalog-card-heading strategy-card-heading">
+          <div class="strategy-identity">
+            <img src="${escapeHtml(strategy.avatar)}" alt="" width="42" height="42" loading="lazy" decoding="async">
+            <div><p class="strategy-character">${escapeHtml(strategy.characterName)}</p><h4>${escapeHtml(strategy.name)}</h4></div>
+          </div>
+          ${strategy.alliance ? `<span class="catalog-tag">${escapeHtml(strategy.alliance)}</span>` : ''}
+        </div>
         <p class="catalog-meta">初始目标生命值 <strong>${strategy.initialLife}</strong></p>
         <p class="catalog-effect">${abilityMarkup(strategy.effect)}</p>
       </article>`);
