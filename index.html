@@ -2,22 +2,22 @@
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content">
   <meta name="color-scheme" content="light">
   <meta name="description" content="卫戍协议·规程百科：检索干员、盟约、策略与装备，查看机制联动，构建共享阵容。">
   <title>卫戍协议 · 盟约与阵容研究</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='8' fill='%23212c32'/%3E%3Cpath d='M11 10h18L20 30Z' fill='%2376baa9'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="./styles.css?v=0.3">
+  <link rel="stylesheet" href="./styles.css?v=0.4">
   <script src="./data.js" defer></script>
   <script src="./alliances.js" defer></script>
   <script src="./strategy-data.js?v=0.3" defer></script>
   <script src="./equipment-data.js" defer></script>
   <script src="./research-data.js" defer></script>
   <script src="./research-query.js" defer></script>
-  <script src="./filters.js" defer></script>
-  <script src="./workspace.js" defer></script>
+  <script src="./filters.js?v=0.4" defer></script>
+  <script src="./workspace.js?v=0.4" defer></script>
   <script src="./equipment.js" defer></script>
-  <script src="./app.js?v=0.3" defer></script>
+  <script src="./app.js?v=0.4" defer></script>
   <script src="./research.js" defer></script>
   <script src="./site-info.js?v=0.3" defer></script>
 </head>
@@ -36,8 +36,10 @@
       </select>
     </div>
     <div class="header-actions">
-      <button type="button" class="secondary-button" data-research-home>机制联动 <span aria-hidden="true">↗</span></button>
-      <button type="button" class="primary-button" id="add-compare">＋ 并排检索</button>
+      <div class="header-workspace-actions">
+        <button type="button" class="secondary-button" data-research-home>机制联动 <span aria-hidden="true">↗</span></button>
+        <button type="button" class="primary-button" id="add-compare">＋ 并排检索</button>
+      </div>
       <div class="header-utilities" role="group" aria-label="指南与站点信息">
         <button type="button" class="site-utility feature-trigger" data-open-info aria-haspopup="dialog" aria-controls="site-features">
           <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7 5h9M7 10h9M7 15h9M3.5 5h.1m-.1 5h.1m-.1 5h.1"/></svg>
@@ -87,7 +89,12 @@
       </nav>
     </aside>
     <main class="encyclopedia-content" aria-label="规程百科内容">
-      <section class="workspace" id="workspace" data-section-panel="operators" aria-label="独立检索与共享阵容工作区"></section>
+      <section class="workspace" id="workspace" data-section-panel="operators" aria-label="独立检索与共享阵容工作区">
+        <div class="pane-switcher" id="pane-switcher" role="group" aria-label="切换检索区" hidden>
+          <button type="button" data-mobile-pane="primary" aria-controls="primary-pane" aria-pressed="true">左侧检索</button>
+          <button type="button" data-mobile-pane="compare" aria-controls="compare-pane" aria-pressed="false">右侧检索</button>
+        </div>
+      </section>
       <section class="catalog-page" data-section-panel="alliances" aria-labelledby="alliance-report-title" hidden>
         <div class="catalog-heading"><p class="eyebrow">ALLIANCE REPORT</p><h2 id="alliance-report-title">盟约报告</h2><p>查看各档激活条件、层数效果与当前阵容的激活进度。</p></div>
         <div class="catalog-controls">
@@ -153,7 +160,14 @@
     </main>
   </div>
   <aside class="roster-panel" id="roster-panel" aria-label="共享阵容管理" aria-describedby="roster-instructions">
-    <div class="roster-heading"><div class="roster-title"><span class="roster-icon" aria-hidden="true">▦</span><h2>阵容管理</h2><span class="member-count" id="member-count">0/8</span><span class="shared-label">跨页共用</span></div><div class="roster-heading-actions"><span id="roster-instructions">拖入干员，或点击卡片上的“加入阵容”</span><button type="button" class="text-button" id="toggle-roster" aria-controls="roster-body" aria-expanded="false">展开 ⌃</button></div></div>
+    <div class="roster-heading">
+      <div class="roster-title"><span class="roster-icon" aria-hidden="true">▦</span><h2>阵容管理</h2><span class="member-count" id="member-count">0/8</span><span class="shared-label">跨页共用</span></div>
+      <div class="roster-heading-actions">
+        <span id="roster-instructions">拖入干员，或点击卡片上的“加入阵容”</span>
+        <button type="button" class="text-button clear-roster" id="clear-roster" aria-label="清空阵容" hidden disabled>清空</button>
+        <button type="button" class="text-button" id="toggle-roster" aria-controls="roster-body" aria-expanded="false">展开 ⌃</button>
+      </div>
+    </div>
     <div class="roster-summary" id="roster-summary"></div>
     <div class="roster-body" id="roster-body" hidden>
       <div class="roster-capacity">
@@ -202,17 +216,17 @@
       <li>
         <span class="feature-number" aria-hidden="true">03</span>
         <h3>本局 BAN 位</h3>
-        <p>在筛选里录入本局不可用的盟约。固定盟约全被选中的干员会在两侧标红。</p>
+        <p>在筛选里录入本局不可用的盟约。固定盟约全被选中的干员会标红，也可以在两侧检索中隐藏。</p>
       </li>
       <li>
         <span class="feature-number" aria-hidden="true">04</span>
         <h3>并排检索</h3>
-        <p>右上角可以开启并排。也可以点干员卡片顶部的盟约，比如风絮的「聚合」，直接在右侧查看，保留左侧的筛选。</p>
+        <p>点「并排检索」或干员卡片顶部的盟约，就能打开右侧。桌面同时显示两栏，手机可切换左右检索。</p>
       </li>
       <li>
         <span class="feature-number" aria-hidden="true">05</span>
         <h3>阵容管理</h3>
-        <p>展开底部阵容，点「普通／精锐」切换状态，点「转职」配装，点阵容里的盟约查看激活进度和效果。</p>
+        <p>展开底部阵容，点「普通／精锐」切换状态，点「转职」配装，点盟约看效果。也可以清空当前阵容。</p>
       </li>
     </ol>
   </dialog>
@@ -226,7 +240,11 @@
     </div>
     <ol class="release-history">
       <li>
-        <div class="release-heading"><h3>v0.3</h3><span class="release-latest">当前版本</span><time datetime="2026-11-09T18:10:55+08:00">2026-11-09 18:10</time></div>
+        <div class="release-heading"><h3>v0.4</h3><span class="release-latest">当前版本</span><time datetime="2026-11-10T20:48:22+08:00">2026-11-10 20:48</time></div>
+        <ul><li>适配手机浏览器，支持单列浏览和左右检索切换。</li><li>本局 BAN 位可隐藏被 BAN 的干员，阵容管理可清空成员。</li><li>修复名称搜索遇到部分特殊单位时中断的问题。</li></ul>
+      </li>
+      <li>
+        <div class="release-heading"><h3>v0.3</h3><time datetime="2026-11-09T18:10:55+08:00">2026-11-09 18:10</time></div>
         <ul><li>顶部新增特色介绍，说明五项筛选与配队功能的入口。</li><li>策略报告补充角色名和头像，支持按角色名搜索。</li></ul>
       </li>
       <li>

@@ -46,7 +46,8 @@ window.GARRISON_FILTERS = {
     return group(selection.alliances, name => operator.alliances.includes(name)) &&
       (!selection.tiers.length || selection.tiers.includes(operator.tier)) &&
       !!effectMatches &&
-      (!nameNeedle || [operator.name, operator.englishName].some(name => name.toLowerCase().includes(nameNeedle))) &&
+      (!nameNeedle || [operator.name, operator.englishName].some(name =>
+        typeof name === "string" && name.toLowerCase().includes(nameNeedle))) &&
       (!needle || this.searchFields(operator).some(text => text.toLowerCase().includes(needle)));
   }
 };

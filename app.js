@@ -19,6 +19,11 @@
   const allianceDialog = document.getElementById('alliance-dialog');
   const headerSearch = document.getElementById('header-any-search');
   const searchScope = document.getElementById('header-search-scope');
+  const paneSwitcher = document.getElementById('pane-switcher');
+  const paneSwitchButtons = paneSwitcher.querySelectorAll('[data-mobile-pane]');
+  const mobileLayout = window.matchMedia('(max-width: 760px), (max-width: 1000px) and (pointer: coarse)');
+  const clearRoster = document.getElementById('clear-roster');
+  const rosterToggle = document.getElementById('toggle-roster');
   const transferDialog = document.getElementById('transfer-dialog');
   const transferSelect = document.getElementById('transfer-gear');
   const escapeHtml = value => String(value).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
@@ -26,6 +31,8 @@
   let saved;
   try { saved = localStorage.getItem(storageKey); } catch { storageAvailable = false; }
   const state = model.restore(saved);
+  if (!saved && mobileLayout.matches) state.panes[0].filtersOpen = false;
+  let mobilePane = 'primary';
   const operatorCount = data.operators.filter(operator => operator.tier !== 'special').length;
   const tierLabel = tier => tier === 'special' ? '特殊' : `${tier} 阶`;
   const filterValue = (kind, value) => kind === 'tiers' && value !== 'special' ? Number(value) : value;
@@ -60,6 +67,7 @@
   function mountPane(pane) {
     const node = document.createElement('section');
     node.className = 'search-pane'; node.dataset.pane = pane.id;
+    node.id = `${pane.id}-pane`;
     node.setAttribute('aria-labelledby', `${pane.id}-title`);
     const allianceItems = names => names.map(name => [name, name, `${data.operators.filter(operator => operator.tier !== 'special' && operator.alliances.includes(name)).length} 名固定成员`]);
     const banItems = names => names.map(name => [name, name]);
@@ -80,7 +88,10 @@
           <p>按开局名单选中不完整或未开放的盟约。参考上一期规则，所属盟约全被选中的干员标红。两侧共用。</p>
           ${groupMarkup('bans', banItems(data.coreAlliances), '核心 BAN')}
           ${groupMarkup('bans', banItems(data.addonAlliances), '独立 BAN')}
-          <button type="button" class="text-button" data-clear-bans hidden>清空 BAN 位</button>
+          <div class="ban-settings-actions">
+            <label class="ban-visibility"><input type="checkbox" data-hide-banned>隐藏被 BAN 的干员</label>
+            <button type="button" class="text-button" data-clear-bans hidden>清空 BAN 位</button>
+          </div>
         </div>
       </details></div></details>
       <div class="active-filters" aria-label="已选筛选条件"></div>
@@ -183,14 +194,27 @@
       </div>
     </article>`;
   }
+  function headerPane() {
+    const id = mobileLayout.matches ? mobilePane : searchScope.value;
+    return state.panes.find(pane => pane.id === id) ?? state.panes[0];
+  }
   function renderHeaderSearch() {
     const operators = state.section === 'operators';
-    searchScope.hidden = !operators || state.panes.length < 2;
-    if (state.panes.length < 2) searchScope.value = 'primary';
+    const split = state.panes.length === 2;
+    searchScope.hidden = !operators || !split;
+    if (!split) {
+      searchScope.value = 'primary';
+      mobilePane = 'primary';
+    }
+    root.dataset.activePane = mobilePane;
+    paneSwitcher.hidden = !split;
+    for (const button of paneSwitchButtons) {
+      button.setAttribute('aria-pressed', String(button.dataset.mobilePane === mobilePane));
+    }
     headerSearch.placeholder = searchPlaceholders[state.section];
     headerSearch.disabled = !operators && !Object.hasOwn(state.catalogQueries, state.section);
     const query = operators
-      ? state.panes.find(pane => pane.id === searchScope.value).filters.query
+      ? headerPane().filters.query
       : state.catalogQueries[state.section] || '';
     if (headerSearch.value !== query) headerSearch.value = query;
   }
@@ -306,14 +330,25 @@
     node.querySelector('.filter-selection-count').textContent = banCount ? `${filterCount} · BAN ${banCount}` : filterCount;
     node.querySelector('.ban-selection-count').textContent = banCount ? `${banCount} 项已选` : '未设置';
     node.querySelector('[data-clear-bans]').hidden = !banCount;
+    node.querySelector('[data-hide-banned]').checked = state.hideBannedOperators;
     renderAllianceReference(node, pane);
-    const matches = data.operators.filter(operator => filter.matches(operator, f))
-      .sort((a, b) => data.tiers.indexOf(a.tier) - data.tiers.indexOf(b.tier));
-    node.querySelector('.result-count').textContent = `${matches.length} / ${data.operators.length} 项`;
+    const candidates = data.operators.filter(operator => filter.matches(operator, f));
+    const matches = state.hideBannedOperators
+      ? candidates.filter(operator => !model.isBanned(operator, state.bannedAlliances))
+      : candidates;
+    matches.sort((a, b) => data.tiers.indexOf(a.tier) - data.tiers.indexOf(b.tier));
+    const hiddenCount = candidates.length - matches.length;
+    node.querySelector('.result-count').textContent = `${matches.length} / ${data.operators.length} 项` +
+      (hiddenCount ? ` · 已隐藏 ${hiddenCount} 名 BAN 干员` : '');
     const openTraitDetails = new Set([...node.querySelectorAll('.trait-details[open]')].map(details => details.closest('.operator-card').dataset.operatorId));
     node.querySelector('.operator-results').innerHTML = matches.map(operator => renderCard(operator, pane)).join('');
     for (const card of node.querySelectorAll('.operator-card')) if (openTraitDetails.has(card.dataset.operatorId)) card.querySelector('.trait-details').open = true;
-    node.querySelector('.empty-state').hidden = !!matches.length;
+    const empty = node.querySelector('.empty-state');
+    empty.hidden = !!matches.length;
+    empty.querySelector('h3').textContent = hiddenCount ? '匹配的干员已隐藏' : '没有匹配的干员';
+    empty.querySelector('p').textContent = hiddenCount
+      ? '在「本局 BAN 位」关闭隐藏，即可查看这些干员。'
+      : '可以减少筛选条件，或清空检索词。';
     node.querySelector('.pane-scroll').scrollTop = scrollTop;
   }
   function renderRoster() {
@@ -344,10 +379,12 @@
         <button type="button" class="member-transfer ${granted ? 'is-set' : ''}" data-member-transfer="${member.id}" aria-label="设置${operator.name}的转职配装">转职</button>
         <button type="button" class="remove-member" data-remove-member="${member.id}" aria-label="移除${operator.name}">×</button>
       </article>`;
-    }).join('') : '<div class="roster-drop-placeholder">拖入一名干员，开始构建阵容</div>';
+    }).join('') : '<div class="roster-drop-placeholder">点击干员卡片上的「加入阵容」。</div>';
     document.getElementById('roster-body').hidden = !state.rosterOpen;
-    document.getElementById('toggle-roster').textContent = state.rosterOpen ? '收起 ⌄' : '展开 ⌃';
-    document.getElementById('toggle-roster').setAttribute('aria-expanded', String(state.rosterOpen));
+    rosterToggle.textContent = state.rosterOpen ? '收起 ⌄' : '展开 ⌃';
+    rosterToggle.setAttribute('aria-expanded', String(state.rosterOpen));
+    clearRoster.hidden = !state.rosterOpen;
+    clearRoster.disabled = !state.members.length;
     roster.classList.toggle('is-open', state.rosterOpen);
   }
   function render() {
@@ -366,9 +403,10 @@
   function openCompare(name) {
     state.section = 'operators';
     model.openCompare(state, name);
+    mobilePane = 'compare';
     if (allianceDialog.open) allianceDialog.close();
     render();
-    root.querySelector('[data-pane="compare"]')?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    if (!mobileLayout.matches) root.querySelector('[data-pane="compare"]')?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
     notify(name ? `右侧已打开${name}检索，左侧与阵容保留` : '已打开独立的右侧检索');
   }
   function addMember(id, pane) {
@@ -414,6 +452,12 @@
     transferDialog.showModal();
   }
   searchScope.addEventListener('change', renderHeaderSearch);
+  mobileLayout.addEventListener('change', renderHeaderSearch);
+  root.addEventListener('change', event => {
+    if (!event.target.matches('[data-hide-banned]')) return;
+    state.hideBannedOperators = event.target.checked;
+    render();
+  });
   transferSelect.addEventListener('change', renderTransferPreview);
   document.getElementById('transfer-close').addEventListener('click', () => transferDialog.close());
   document.getElementById('transfer-apply').addEventListener('click', () => {
@@ -432,7 +476,7 @@
       }
       return;
     }
-    const paneId = input === headerSearch ? searchScope.value : input.closest('[data-pane]')?.dataset.pane;
+    const paneId = input === headerSearch ? headerPane().id : input.closest('[data-pane]')?.dataset.pane;
     const pane = state.panes.find(pane => pane.id === paneId);
     if (!pane) return;
     pane.filters[input.dataset.search] = input.value;
@@ -456,6 +500,11 @@
   }, true);
   document.addEventListener('click', event => {
     const button = event.target.closest('button'); if (!button) return;
+    if (button.dataset.mobilePane) {
+      mobilePane = button.dataset.mobilePane;
+      renderHeaderSearch();
+      return;
+    }
     if (button.id === 'toggle-sidebar') {
       state.sidebarCollapsed = !state.sidebarCollapsed;
       renderSidebar(); persist();
@@ -519,13 +568,24 @@
     } else if (button.dataset.viewAlliance) showAlliance(button.dataset.viewAlliance);
     else if (button.dataset.compareAlliance) openCompare(button.dataset.compareAlliance);
     else if (button.id === 'add-compare') openCompare();
-    else if (button.hasAttribute('data-close-compare')) { model.closeCompare(state); render(); notify('已关闭右侧检索，阵容与左侧条件已保留'); }
-    else if (button.id === 'toggle-roster') { state.rosterOpen = !state.rosterOpen; renderRoster(); persist(); }
+    else if (button.hasAttribute('data-close-compare')) {
+      model.closeCompare(state);
+      render();
+      document.getElementById('add-compare').focus({ preventScroll: true });
+      notify('已关闭右侧检索，阵容与左侧条件已保留');
+    } else if (button === rosterToggle) { state.rosterOpen = !state.rosterOpen; renderRoster(); persist(); }
+    else if (button === clearRoster) {
+      if (!state.members.length || !window.confirm('清空当前阵容中的全部干员和转职配装？')) return;
+      state.members = [];
+      render();
+      rosterToggle.focus({ preventScroll: true });
+      notify('阵容已清空');
+    }
     else if (button.id === 'toggle-personnel-document') { state.personnelDocument = !state.personnelDocument; renderRoster(); persist(); }
     else if (button.id === 'alliance-dialog-close') allianceDialog.close();
   });
   // 使用指针捕获完成拖动，避免依赖浏览器原生Drag & Drop的跨容器投放握手。
-  // 按钮和链接仍可直接操作；触屏从头像或标题发起，其余正文保持可滚动。
+  // 手机只从头像发起拖动，让卡片标题区域可以滚动。
   let dragging = null;
   function overRoster(event) {
     const rect = roster.getBoundingClientRect();
@@ -540,7 +600,7 @@
   document.addEventListener('pointerdown', event => {
     if (event.button !== 0 || event.isPrimary === false || event.target.closest('button,a,input,summary')) return;
     const card = event.target.closest('.operator-card'); if (!card || card.hasAttribute('data-reference-only')) return;
-    if (event.pointerType === 'touch' && !event.target.closest('.operator-heading')) return;
+    if (event.pointerType === 'touch' && !event.target.closest(mobileLayout.matches ? '.operator-avatar' : '.operator-heading')) return;
     cancelDrag();
     dragging = { card, pointerId: event.pointerId, id: card.dataset.operatorId,
       paneId: card.closest('[data-pane]').dataset.pane, x: event.clientX, y: event.clientY, moved: false };

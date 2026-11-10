@@ -18,7 +18,7 @@
   function create() {
     return {
       version: 1, panes: [pane("primary")], members: [], rosterOpen: false,
-      bannedAlliances: [], personnelDocument: false,
+      bannedAlliances: [], hideBannedOperators: false, personnelDocument: false,
       section: "operators", sidebarCollapsed: false, catalogQueries: { alliances: "", strategies: "", equipment: "" }
     };
   }
@@ -51,6 +51,7 @@
       }
       state.rosterOpen = value.rosterOpen === true;
       state.bannedAlliances = [...new Set(strings(value.bannedAlliances).filter(name => knownAlliances.has(name)))];
+      state.hideBannedOperators = value.hideBannedOperators === true;
       state.personnelDocument = value.personnelDocument === true;
       if (sections.includes(value.section)) state.section = value.section;
       state.sidebarCollapsed = value.sidebarCollapsed === true;
