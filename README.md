@@ -4,7 +4,7 @@
 
 《明日方舟》**卫戍协议·规程**的非官方玩家工具，由 [WakingSeasons](https://github.com/WakingSeasons) 制作和维护。支持电脑与手机浏览器，无需登录。
 
-[打开在线工具](https://wakingseasons.github.io/garrison-tool/) · [本次更新：v1.0.0](docs/releases/v1.0.0.md) · [完整更新记录](CHANGELOG.md) · [反馈问题](https://github.com/WakingSeasons/garrison-tool/issues)
+[打开在线工具](https://wakingseasons.github.io/garrison-tool/) · [本次更新：v1.0.1](docs/releases/v1.0.1.md) · [完整更新记录](CHANGELOG.md) · [反馈问题](https://github.com/WakingSeasons/garrison-tool/issues)
 
 ## 能做什么
 
@@ -43,7 +43,7 @@
 2. **已经开局**：进入「截图识别」→参考可放大的截图示范→上传本局截图→核对文字与标记结果→点击「套用到本局」。
 3. **只想查敌人**：进入「敌方资料」→选 Boss 或特训类别→点击头像／名称打开对应 PRTS 页面。
 
-网页顶部的「特色介绍」和版本按钮可随时查看功能入口与更新记录。
+网页顶部的「特色介绍」和版本按钮可随时查看功能入口与更新记录。手机端点击右上角「⋯」展开机制联动、并排检索、介绍、作者及版本入口，默认把空间留给搜索和资料内容。
 
 ## 当前边界与常见问题
 

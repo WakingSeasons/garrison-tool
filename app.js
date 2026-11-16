@@ -56,7 +56,9 @@
       try { localStorage.setItem(storageKey, JSON.stringify(state)); }
       catch { storageAvailable = false; }
     }
-    document.getElementById('save-status').textContent = storageAvailable ? '本机自动保存' : '当前会话保存 · 本机存储不可用';
+    const saveStatus = document.getElementById('save-status');
+    saveStatus.textContent = storageAvailable ? '本机自动保存' : '当前会话保存 · 本机存储不可用';
+    saveStatus.dataset.error = String(!storageAvailable);
   }
   function notify(text) {
     const toast = document.getElementById('toast');

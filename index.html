@@ -7,23 +7,23 @@
   <meta name="description" content="明日方舟卫戍协议·规程玩家工具：按特质与联动检索干员，并排配队、管理本局 BAN 位，查询敌人、策略与装备，支持截图识别本局信息。">
   <title>卫戍协议·规程 · 盟约与阵容研究</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='8' fill='%23212c32'/%3E%3Cpath d='M11 10h18L20 30Z' fill='%2376baa9'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="./styles.css?v=1.0.0">
-  <link rel="stylesheet" href="./capture/page.css?v=1.0.0">
+  <link rel="stylesheet" href="./styles.css?v=1.0.1">
+  <link rel="stylesheet" href="./capture/page.css?v=1.0.1">
   <script src="./data.js" defer></script>
   <script src="./alliances.js" defer></script>
-  <script src="./strategy-data.js?v=1.0.0" defer></script>
+  <script src="./strategy-data.js?v=1.0.1" defer></script>
   <script src="./equipment-data.js" defer></script>
   <script src="./research-data.js" defer></script>
   <script src="./research-query.js" defer></script>
-  <script src="./filters.js?v=1.0.0" defer></script>
-  <script src="./workspace.js?v=1.0.0" defer></script>
+  <script src="./filters.js?v=1.0.1" defer></script>
+  <script src="./workspace.js?v=1.0.1" defer></script>
   <script src="./equipment.js" defer></script>
-  <script src="./enemy-data.js?v=1.0.0" defer></script>
-  <script src="./enemies.js?v=1.0.0" defer></script>
-  <script src="./app.js?v=1.0.0" defer></script>
+  <script src="./enemy-data.js?v=1.0.1" defer></script>
+  <script src="./enemies.js?v=1.0.1" defer></script>
+  <script src="./app.js?v=1.0.1" defer></script>
   <script src="./research.js" defer></script>
-  <script src="./site-info.js?v=1.0.0" defer></script>
-  <script type="module" src="./capture/page.mjs?v=1.0.0"></script>
+  <script src="./site-info.js?v=1.0.1" defer></script>
+  <script type="module" src="./capture/page.mjs?v=1.0.1"></script>
 </head>
 <body>
   <header class="site-header">
@@ -39,7 +39,9 @@
         <option value="compare">右侧</option>
       </select>
     </div>
-    <div class="header-actions">
+    <button type="button" class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="更多功能" aria-controls="header-actions" aria-expanded="false" title="更多功能">⋯</button>
+    <div class="header-actions" id="header-actions">
+      <p class="mobile-menu-title">卫戍协议·规程</p>
       <div class="header-workspace-actions">
         <button type="button" class="secondary-button" data-research-home>机制联动 <span aria-hidden="true">↗</span></button>
         <button type="button" class="primary-button" id="add-compare">＋ 并排检索</button>
@@ -294,7 +296,11 @@
     </div>
     <ol class="release-history">
       <li>
-        <div class="release-heading"><h3>v1.0.0</h3><span class="release-latest">正式版 · 当前版本</span><time datetime="2026-11-16">2026-11-16</time></div>
+        <div class="release-heading"><h3>v1.0.1</h3><span class="release-latest">当前版本</span><time datetime="2026-11-16">2026-11-16</time></div>
+        <ul><li>手机顶栏精简为一行搜索与「⋯」更多，机制联动、并排检索、特色介绍、作者和版本入口收进菜单。</li><li>隐藏重复说明、栏目英文标题和空阵容提示，缩小栏目标题与导航占位，保留筛选、盟约进度等核心信息。</li><li>手机横屏沿用精简顶栏；菜单支持点击外部、Escape 和操作后自动收起。</li></ul>
+      </li>
+      <li>
+        <div class="release-heading"><h3>v1.0.0</h3><span class="release-latest">首个正式版</span><time datetime="2026-11-16">2026-11-16</time></div>
         <ul><li>首个正式版，统一标明「卫戍协议·规程」，补全特色介绍与项目说明。</li><li>相对线上 v0.4：开放敌方资料，收录 10 名 Boss、九类特训敌人与 PRTS 入口。</li><li>新增截图识别试用：最多两张、文字结果、完整后套用本局 BAN 位与敌方筛选。</li><li>新增干员／盟约标记，识别后展示未被 BAN、被 BAN 或待确认，名单独立保存。</li><li>友情链接独立为导航末项。截图识别与 BAN 推断仍需对照游戏核对。</li></ul>
       </li>
       <li>
