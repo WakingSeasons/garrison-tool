@@ -9,11 +9,12 @@
   const equipment = window.GARRISON_EQUIPMENT;
   const strategies = window.GARRISON_STRATEGIES;
   const equipmentPage = window.GARRISON_EQUIPMENT_PAGE;
+  const enemyPage = window.GARRISON_ENEMY_PAGE;
   const storageKey = 'garrison-research-workspace-v1';
   const root = document.getElementById('workspace');
   const layout = document.getElementById('encyclopedia-layout');
   const sidebarToggle = document.getElementById('toggle-sidebar');
-  const sectionButtons = layout.querySelectorAll('[data-encyclopedia-section]');
+  const sectionButtons = layout.querySelectorAll('#encyclopedia-navigation [data-encyclopedia-section]');
   const sectionPanels = layout.querySelectorAll('[data-section-panel]');
   const roster = document.getElementById('roster-panel');
   const allianceDialog = document.getElementById('alliance-dialog');
@@ -43,8 +44,9 @@
     alliances: '搜索盟约名称、档位或效果…',
     strategies: '搜索策略名称、效果或关联盟约…',
     equipment: '搜索装备名称、效果、联合部件或新增盟约…',
-    enemies: '敌方资料 · 后续制作',
-    presets: '阵容保存与预设 · 后续制作'
+    enemies: '搜索敌人名称、Boss 或特训类别…',
+    presets: '阵容保存与预设 · 后续制作',
+    capture: '上传截图，识别本局信息…', friends: '友情链接'
   };
   let toastTimer, scrollSaveTimer;
   let transferMemberId;
@@ -61,6 +63,9 @@
     toast.textContent = text; toast.hidden = false;
     clearTimeout(toastTimer); toastTimer = setTimeout(() => { toast.hidden = true; }, 2500);
   }
+  function publishMarkedItems(){document.dispatchEvent(new CustomEvent('garrison:marks-updated',{detail:state.markedItems.map(item=>({...item}))}));}
+  document.addEventListener('garrison:marks-request',publishMarkedItems);
+  document.addEventListener('garrison:marks-change',event=>{state.markedItems=model.normalizeMarkedItems(event.detail);persist();publishMarkedItems();});
   function groupMarkup(kind, items, label) {
     return `<div class="filter-row"><span class="filter-label">${label}</span><div class="filter-options" role="group" aria-label="${label}">${items.map(([value, text, title]) => `<button type="button" class="filter-button" data-filter="${kind}" data-value="${escapeHtml(value)}" aria-pressed="false"${title ? ` title="${escapeHtml(title)}"` : ''}>${escapeHtml(text)}</button>`).join('')}</div></div>`;
   }
@@ -234,6 +239,11 @@
   }
   function renderCatalog(resetScroll = false) {
     const { section, catalogQueries } = state;
+    if (section === 'enemies') {
+      enemyPage.setSession(state.sessionContext);
+      enemyPage.setQuery(catalogQueries.enemies);
+      return;
+    }
     if (section === 'equipment') {
       equipmentPage.setQuery(catalogQueries.equipment);
       return;
@@ -409,6 +419,11 @@
     if (!mobileLayout.matches) root.querySelector('[data-pane="compare"]')?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
     notify(name ? `右侧已打开${name}检索，左侧与阵容保留` : '已打开独立的右侧检索');
   }
+  document.addEventListener('garrison:apply-recognition',event=>{
+    const result=model.applyRecognition(state,event.detail);
+    if(result.ok){render();notify('已套用本局 BAN 位与敌方筛选');}
+    document.dispatchEvent(new CustomEvent('garrison:recognition-applied',{detail:{ok:result.ok,message:result.ok?'已套用：本局 BAN 位已替换，敌方资料已切换至本局 Boss 与特训类型。':result.error}}));
+  });
   function addMember(id, pane) {
     const operator = data.operators.find(operator => operator.id === id);
     if (!operator) return;
@@ -500,6 +515,10 @@
   }, true);
   document.addEventListener('click', event => {
     const button = event.target.closest('button'); if (!button) return;
+    if(button.hasAttribute('data-open-recognized-bans')){
+      state.section='operators';state.panes[0].filtersOpen=true;mobilePane='primary';render();
+      const bans=root.querySelector('[data-pane="primary"] .ban-settings');bans.open=true;bans.scrollIntoView({block:'nearest'});return;
+    }
     if (button.dataset.mobilePane) {
       mobilePane = button.dataset.mobilePane;
       renderHeaderSearch();

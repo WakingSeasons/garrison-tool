@@ -691,6 +691,7 @@ dialog{padding:0;border:1px solid #dbe6d4;border-radius:10px;color:var(--ink);bo
 }
 
 .info-heading h2 { font-size: 22px; font-weight: 650; }
+.info-intro { padding: 14px 22px 4px; color: #596d63; font-size: 13px; line-height: 1.65; }
 .feature-list { margin: 0; padding: 4px 22px 10px; list-style: none; }
 
 .feature-list li {
@@ -834,7 +835,7 @@ dialog{padding:0;border:1px solid #dbe6d4;border-radius:10px;color:var(--ink);bo
   .roster-member .remove-member { top: 50%; width: 28px; height: 32px; transform: translateY(-50%); }
   .toast { top: auto; bottom: 12px; padding: 8px 12px; }
 
-  .info-heading, .release-history, .feature-list { padding-inline: 13px; }
+  .info-heading, .info-intro, .release-history, .feature-list { padding-inline: 13px; }
   .feature-list li { grid-template-columns: 26px minmax(0, 1fr); gap: 2px 8px; padding-block: 9px; }
   .feature-list p { grid-column: 2; padding: 0; }
 }
@@ -859,3 +860,6 @@ dialog{padding:0;border:1px solid #dbe6d4;border-radius:10px;color:var(--ink);bo
   .site-header { grid-template-columns: auto minmax(0, 1fr) auto auto; }
   .header-utilities { grid-area: 1 / 4; }
 }
+/* v0.5: enemy directory and related resources */
+.encyclopedia-sidebar{display:flex;flex-direction:column}.sidebar-heading,#encyclopedia-navigation{flex-shrink:0}.enemy-category-options{display:flex;flex-wrap:wrap;gap:5px}.enemy-catalog-controls{gap:10px;align-items:center}.enemy-reference-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,190px),1fr));gap:9px}.enemy-reference-card{display:flex;align-items:center;gap:10px;min-width:0;min-height:69px;padding:10px;border:1px solid #dfe7dd;border-radius:7px;text-decoration:none;color:#395446;background:#fbfcfa}.enemy-reference-card:hover{background:#f0f7ee;border-color:#a5c7ad}.enemy-reference-card:focus-visible{outline:2px solid #42876a;outline-offset:2px}.enemy-reference-card img{width:44px;height:44px;flex-shrink:0;object-fit:contain;border-radius:5px;background:#e7ece3}.enemy-reference-name{flex:1;min-width:0;font-size:12px;line-height:1.6;overflow-wrap:anywhere}.enemy-reference-arrow{font-size:12px;color:#8fa187}.enemy-reference-boss{border-color:#e5e0ce;background:#fcfaf2}.enemy-reference-boss .enemy-reference-name{font-weight:600}.enemy-reference-order{font-size:10px;color:#8a9b7e;margin:0 0 9px}.enemy-reference-fallback{width:44px;height:44px;display:grid;place-items:center;background:#e8eee2;color:#879c7d;border-radius:5px}.enemy-catalog-footer{display:flex;flex-wrap:wrap;gap:5px 12px;align-items:center}.enemy-catalog-footer>span{font-size:10px;color:#8d9a84;margin-right:auto}.enemy-catalog-footer a+a{margin-inline-start:0}
+@media(max-width:760px),(max-width:1000px) and (pointer:coarse){.encyclopedia-sidebar{flex-direction:row;flex-wrap:wrap}.enemy-reference-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.enemy-reference-card{padding:8px;gap:7px;min-height:62px}.enemy-reference-card img{width:37px;height:37px}.enemy-reference-name{font-size:11px}.enemy-reference-arrow{display:none}.enemy-category-options .filter-button{font-size:10px;padding:5px 8px}.enemy-catalog-footer>span{flex-basis:100%}}
