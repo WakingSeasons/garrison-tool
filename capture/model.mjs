@@ -63,7 +63,7 @@ export function formatReport(r,count) {
     const unseen=names.filter(n=>!r.alliances.some(a=>a.name===n));if(unseen.length)lines.push('  未识别：'+unseen.join('、'));lines.push('');
   }
   if(r.conflicts.length)lines.push('⚠ 图片信息冲突',...r.conflicts.map(s=>'  '+s),'请移除不同局的截图；冲突消除前不使用合并结果。','');
-  if(r.missing.length)lines.push(count<2?'需要补充第 2 张截图':'已达到两张上限，请替换拍摄不全的截图',...r.missing.map(s=>'  缺少 / 待确认：'+s),'建议：第一张保留左上角难度、完整核心盟约和右侧敌方信息；第二张向下滚动，拍全附加盟约名称。两张保留一些重叠盟约。','');
+  if(r.missing.length)lines.push('以下信息尚未识别或待确认（不一定是截图缺失）',...r.missing.map(s=>'  缺少 / 待确认：'+s),count<2?'请先对照原图核对；如文字过小或被遮挡，可补一张同局截图，拍清对应位置。':'已达到两张上限；如需补图，请先移除一张，再上传同局的清晰截图。','两张截图应来自同一局、同一次盟约选择，尽量保留重叠信息。','');
   else if(!r.conflicts.length)lines.push('本次基础字段已齐全，请对照原图核对。','');
   lines.push('可将上述盟约状态套用到 Wiki 的本局 BAN 位，并更新敌方资料的本局筛选。标记对象的 BAN 状态按盟约推断，尚未直接识别画面底部的禁用干员名单，请对照游戏核对。');
   return lines.join('\n');

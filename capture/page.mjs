@@ -1,5 +1,5 @@
-import {recognize,setProgress} from './recognizer.mjs?v=1.0.2';
-import {validateFiles,mergeResults,formatReport} from './model.mjs';
+import {recognize,setProgress} from './recognizer.mjs?v=1.0.4';
+import {validateFiles,mergeResults,formatReport} from './model.mjs?v=1.0.4';
 import {initMarkedItems,updateMarkedResult,markedResultText} from './marks.mjs';
 const page=document.querySelector('[data-section-panel=capture]'),$=id=>document.getElementById('capture-'+id);
 let entries=[],busy=false,loading=false,result=null,report='',library;
@@ -19,7 +19,7 @@ export function presentCaptureResult(value,count=entries.length){
   result=value;report=formatReport(value,count);$('result').textContent=report;$('copy').disabled=false;$('apply').disabled=!value.complete||Boolean(value.conflicts?.length);$('apply').textContent='套用到本局';$('next').hidden=true;
   $('apply-state').classList.remove('is-applied');
   updateMarkedResult(value);
-  $('status').textContent=value.conflicts?.length?'截图信息冲突，请核对是否同一局':value.complete?'识别字段已齐全，请核对后套用':count<2?'识别尚未完整，可以补第 2 张截图':'已达两张上限，请替换不完整的截图';
+  $('status').textContent=value.conflicts?.length?'截图信息冲突，请核对是否同一局':value.complete?'识别字段已齐全，请核对后套用':'部分信息尚未识别，请对照原图核对下方缺失项';
   $('apply-state').textContent=value.complete?'套用将替换现有本局 BAN 位；阵容和左右检索条件保留。':'请先补齐缺失或待确认的信息，完整后才能套用。';
 }
 async function run(){

@@ -4,7 +4,7 @@
 
 《明日方舟》**卫戍协议·规程**的非官方玩家工具，由 [WakingSeasons](https://github.com/WakingSeasons) 制作和维护。支持电脑与手机浏览器，无需登录。
 
-[打开在线工具](https://wakingseasons.github.io/garrison-tool/) · [本次更新：v1.0.3](docs/releases/v1.0.3.md) · [完整更新记录](CHANGELOG.md) · [反馈问题](https://github.com/WakingSeasons/garrison-tool/issues)
+[打开在线工具](https://wakingseasons.github.io/garrison-tool/) · [本次更新：v1.0.4](docs/releases/v1.0.4.md) · [完整更新记录](CHANGELOG.md) · [反馈问题](https://github.com/WakingSeasons/garrison-tool/issues)
 
 ## 能做什么
 

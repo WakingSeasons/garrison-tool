@@ -1,4 +1,4 @@
-import { CORE, ADDON, clean, parseOcrLines } from './model.mjs';
+import { CORE, ADDON, clean, parseOcrLines } from './model.mjs?v=1.0.4';
 import { signature,matchSignature } from './glyphs.mjs';
 let workerPromise;
 let log=()=>{};
@@ -63,7 +63,7 @@ export async function recognize(source){
   const canvas=await imageCanvas(source),w=await worker();
   // Separate text from bright artwork and cyan circles before OCR. Preserve
   // source coordinates so state detection always samples the original image.
-  const regions=[{name:'难度',x:0,y:0,width:400,height:90,psm:7,color:true,source:canvas.difficultyCrop}, {name:'Boss',x:1490,y:490,width:335,height:70,psm:7}, {name:'特训类型',x:1490,y:605,width:320,height:210,psm:6}, {name:'盟约名称',x:125,y:145,width:1150,height:canvas.height-155,psm:11}];
+  const regions=[{name:'难度',x:0,y:0,width:400,height:90,psm:7,color:true,source:canvas.difficultyCrop}, {name:'Boss',x:1490,y:490,width:335,height:110,psm:6}, {name:'特训类型',x:1490,y:605,width:320,height:210,psm:6}, {name:'盟约名称',x:125,y:145,width:1150,height:canvas.height-155,psm:11}];
   const lines=[],raw=[];const ratio=canvas.width/1920;
   async function readRegion(region){
     log('正在识别'+region.name+'…');
@@ -73,6 +73,9 @@ export async function recognize(source){
     ctx.putImageData(pixels,0,0);await w.setParameters({tessedit_pageseg_mode:String(region.psm)});const {data}=await w.recognize(prepared.toDataURL('image/png'),{}, {text:true,tsv:true});
     raw.push(region.name+'：\n'+data.text);const found=getLines(data.tsv||'');
     for(const line of found){if(region.name==='特训类型')line.kind='type';line.bbox={x0:line.bbox.x0/zoom+x,y0:line.bbox.y0/zoom+y,x1:line.bbox.x1/zoom+x,y1:line.bbox.y1/zoom+y};for(const word of line.words){word.x=word.x/zoom+x;word.y=word.y/zoom+y;word.w/=zoom;word.h/=zoom;}}
+    // Long leader names wrap in the game. Match their complete text only
+    // within the dedicated Boss region, leaving unrelated text separate.
+    if(region.name==='Boss'&&found.length>1)found.push({text:found.map(line=>line.text).join(''),kind:'boss',words:[],bbox:{x0:x,y0:y,x1:x+rw,y1:y+rh}});
     return found;
   }
   for(const region of regions)lines.push(...await readRegion(region));
@@ -88,15 +91,15 @@ export async function recognize(source){
   if(!addonRows.length){const header=lines.find(l=>clean(l.text).includes('附加盟约'));if(header){const words=header.words.filter(w=>/[附加盟约]/.test(w.text));const ys=words.map(w=>w.y).sort((a,b)=>a-b);addonRows.push((ys.length?ys[Math.floor(ys.length/2)]:header.bbox.y0)+198);}}
   if(addonRows.length){const y=addonRows[0];for(let i=0;i<10;i++)slots.push({x:175+i*116.4,y,names:ADDON});const bottom=addonRows.find(v=>v>y+150)||y+196;if(bottom+24<canvas.height)for(let i=0;i<6;i++)slots.push({x:175+i*116.4,y:bottom,names:ADDON});}
   const bank=await fetch(new URL('./assets/glyphs.json',import.meta.url)).then(r=>r.ok?r.json():{}).catch(()=>({}));
-  const matchDiagnostics=[];
+  const matchDiagnostics=[],slotLines=[];
   for(const slot of slots){
     const candidates=[-4,0,4].map(offset=>({...matchSignature(signature(canvas,slot.x,slot.y+offset),bank,slot.names),y:slot.y+offset}));
     const match=candidates.sort((a,b)=>b.score-a.score)[0];
     matchDiagnostics.push({x:slot.x,y:slot.y,...match});
     const stable=candidates.every(c=>c.name===match.name)&&match.score>.72&&match.margin>.025;
-    if(match.score>.65&&match.margin>.035||stable){const bbox={x0:slot.x-35,y0:match.y,x1:slot.x+35,y1:match.y+25};lines.push({text:match.name,bbox,state:stateAt(canvas,bbox),confidence:Math.round(match.score*100),words:[]});continue;}
+    if(match.score>.65&&match.margin>.035||stable){const bbox={x0:slot.x-35,y0:match.y,x1:slot.x+35,y1:match.y+25};const line={text:match.name,bbox,state:stateAt(canvas,bbox),confidence:Math.round(match.score*100),words:[]};lines.push(line);slotLines.push(line);continue;}
     const found=await readRegion({name:'单格盟约',x:slot.x-55,y:slot.y-4,width:110,height:44,psm:7,zoom:3});
-    const text=clean(found.map(l=>l.text).join(''));const exact=slot.names.find(n=>text===n);if(exact){const bbox={x0:slot.x-35,y0:slot.y,x1:slot.x+35,y1:slot.y+25};lines.push({text:exact,bbox,state:stateAt(canvas,bbox),confidence:Math.min(...found.map(l=>l.confidence)),words:[]});}
+    const text=clean(found.map(l=>l.text).join(''));const exact=slot.names.find(n=>text===n);if(exact){const bbox={x0:slot.x-35,y0:slot.y,x1:slot.x+35,y1:slot.y+25};const line={text:exact,bbox,state:stateAt(canvas,bbox),confidence:Math.min(...found.map(l=>l.confidence)),words:[]};lines.push(line);slotLines.push(line);}
   }
   const expanded=[...lines];
   for(const line of lines){
@@ -111,7 +114,11 @@ export async function recognize(source){
       expanded.push({text:name,bbox,state:stateAt(canvas,bbox),confidence:line.confidence});
     }
   }
-  const result=parseOcrLines(expanded);const unique=new Map();for(const a of result.alliances){if(a.bbox?.y0<140)continue;const old=unique.get(a.name);if(!old||a.state!=='uncertain')unique.set(a.name,a);}result.alliances=[...unique.values()];
+  const result=parseOcrLines(expanded);const unique=new Map();for(const a of result.alliances){if(a.bbox?.y0<140)continue;const old=unique.get(a.name);if(!old||a.state!=='uncertain')unique.set(a.name,a);}
+  // A broad OCR pass can read an icon as an alliance name. Prefer labels
+  // verified in their actual grid cells; conflicting cell reads stay unknown.
+  const verified=new Map();for(const a of parseOcrLines(slotLines).alliances){const old=verified.get(a.name);verified.set(a.name,old&&old.state!==a.state?{...a,state:'uncertain'}:a);}for(const [name,a]of verified)unique.set(name,a);
+  result.alliances=[...unique.values()];
   if(!result.boss){const portraits=await fetch(new URL('./assets/portraits.json',import.meta.url)).then(r=>r.ok?r.json():{}).catch(()=>({}));const signature=portraitSignature(canvas);const scores=Object.entries(portraits).map(([name,template])=>({name,score:1-template.reduce((sum,v,i)=>sum+Math.abs(v-signature[i]),0)/(255*signature.length)})).sort((a,b)=>b.score-a.score);if(scores[0]?.score>.88&&scores[0].score-(scores[1]?.score||0)>.035){result.boss=scores[0].name;raw.push('领袖头像模板匹配：'+result.boss+'（'+Math.round(scores[0].score*100)+'）');}}
   result.raw=raw.join('\n');result.width=canvas.width;result.height=canvas.height;result.layout=canvas.layout;result.diagnostics={coreRows,addonRows,matches:matchDiagnostics};
   return result;
