@@ -8,7 +8,14 @@ async function worker(){
     workerPath:new URL('./vendor/worker.min.js',import.meta.url).href,
     corePath:new URL('./vendor/core',import.meta.url).href,
     langPath:new URL('./vendor/lang',import.meta.url).href,
-    logger:m=>log(m.status==='recognizing text'?'正在识别文字… '+Math.round(m.progress*100)+'%':'正在准备本地识别资源…'),
+    logger:m=>{
+      const percent=Math.round((m.progress||0)*100)+'%';
+      log(m.status==='recognizing text'?'正在识别文字… '+percent
+        :m.status==='loading language traineddata'?'正在加载中文识别模型… '+percent+'（首次使用可能较慢）'
+        :m.status==='loading tesseract core'?'正在加载本地识别引擎…（首次使用可能较慢）'
+        :m.status.startsWith('initializing')?'正在初始化识别引擎…'
+        :'正在准备本地识别资源…');
+    },
   }).then(async w=>{await w.setParameters({tessedit_pageseg_mode:'11',preserve_interword_spaces:'1'});return w;}).catch(e=>{workerPromise=null;throw e;});
   return workerPromise;
 }

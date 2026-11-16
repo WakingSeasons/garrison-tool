@@ -1,4 +1,4 @@
-import {recognize,setProgress} from './recognizer.mjs';
+import {recognize,setProgress} from './recognizer.mjs?v=1.0.2';
 import {validateFiles,mergeResults,formatReport} from './model.mjs';
 import {initMarkedItems,updateMarkedResult,markedResultText} from './marks.mjs';
 const page=document.querySelector('[data-section-panel=capture]'),$=id=>document.getElementById('capture-'+id);
@@ -22,9 +22,10 @@ export function presentCaptureResult(value,count=entries.length){
   $('apply-state').textContent=value.complete?'套用将替换现有本局 BAN 位；阵容和左右检索条件保留。':'请先补齐缺失或待确认的信息，完整后才能套用。';
 }
 async function run(){
-  if(busy||loading||!entries.length)return;busy=true;error('');reset();render();$('status').textContent='正在浏览器本地识别…';
+  if(busy||loading||!entries.length)return;busy=true;error('');reset();render();$('status').textContent='正在浏览器本地识别… 已用 0 秒';$('progress').textContent='正在加载识别程序，首次使用可能需要等待数十秒，请保持页面打开。';
+  const started=performance.now(),timer=setInterval(()=>{$('status').textContent='正在浏览器本地识别… 已用 '+Math.floor((performance.now()-started)/1000)+' 秒';},1000);
   try{await ensureLibrary();for(let i=0;i<entries.length;i++){if(!entries[i].result){$('progress').textContent='正在处理第 '+(i+1)+' / '+entries.length+' 张截图…';entries[i].result=await recognize(entries[i].file);}}presentCaptureResult(mergeResults(entries.map(e=>e.result)),entries.length);$('raw').textContent=entries.map((e,i)=>'截图 '+(i+1)+'\n'+e.result.raw).join('\n\n');$('raw-panel').hidden=false;$('progress').textContent='识别完成，图片只在当前浏览器中处理。';}
-  catch(e){error('识别未完成：'+e.message);$('status').textContent='识别未完成，可以重试';}finally{busy=false;render();}
+  catch(e){error('识别未完成：'+e.message);$('status').textContent='识别未完成，可以重试';}finally{clearInterval(timer);busy=false;render();}
 }
 $('files').onchange=e=>{add([...e.target.files]);e.target.value='';};$('run').onclick=run;
 $('clear').onclick=()=>{entries.forEach(e=>URL.revokeObjectURL(e.url));entries=[];reset();error('');render();};

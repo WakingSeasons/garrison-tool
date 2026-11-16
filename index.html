@@ -23,7 +23,7 @@
   <script src="./app.js?v=1.0.1" defer></script>
   <script src="./research.js" defer></script>
   <script src="./site-info.js?v=1.0.1" defer></script>
-  <script type="module" src="./capture/page.mjs?v=1.0.1"></script>
+  <script type="module" src="./capture/page.mjs?v=1.0.2"></script>
 </head>
 <body>
   <header class="site-header">
@@ -296,7 +296,11 @@
     </div>
     <ol class="release-history">
       <li>
-        <div class="release-heading"><h3>v1.0.1</h3><span class="release-latest">当前版本</span><time datetime="2026-11-16">2026-11-16</time></div>
+        <div class="release-heading"><h3>v1.0.2</h3><span class="release-latest">当前版本</span><time datetime="2026-11-16">2026-11-16</time></div>
+        <ul><li>识别开始时提示首次加载可能等待数十秒，并显示已用时间。</li><li>区分识别程序、中文模型加载、引擎初始化与文字识别阶段，便于判断等待状态。</li></ul>
+      </li>
+      <li>
+        <div class="release-heading"><h3>v1.0.1</h3><time datetime="2026-11-16">2026-11-16</time></div>
         <ul><li>手机顶栏精简为一行搜索与「⋯」更多，机制联动、并排检索、特色介绍、作者和版本入口收进菜单。</li><li>隐藏重复说明、栏目英文标题和空阵容提示，缩小栏目标题与导航占位，保留筛选、盟约进度等核心信息。</li><li>手机横屏沿用精简顶栏；菜单支持点击外部、Escape 和操作后自动收起。</li></ul>
       </li>
       <li>
