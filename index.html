@@ -8,7 +8,7 @@
   <title>卫戍协议·规程 · 盟约与阵容研究</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='8' fill='%23212c32'/%3E%3Cpath d='M11 10h18L20 30Z' fill='%2376baa9'/%3E%3C/svg%3E">
   <link rel="stylesheet" href="./styles.css?v=1.0.1">
-  <link rel="stylesheet" href="./capture/page.css?v=1.0.1">
+  <link rel="stylesheet" href="./capture/page.css?v=1.0.3">
   <script src="./data.js" defer></script>
   <script src="./alliances.js" defer></script>
   <script src="./strategy-data.js?v=1.0.1" defer></script>
@@ -20,10 +20,10 @@
   <script src="./equipment.js" defer></script>
   <script src="./enemy-data.js?v=1.0.1" defer></script>
   <script src="./enemies.js?v=1.0.1" defer></script>
-  <script src="./app.js?v=1.0.1" defer></script>
+  <script src="./app.js?v=1.0.3" defer></script>
   <script src="./research.js" defer></script>
   <script src="./site-info.js?v=1.0.1" defer></script>
-  <script type="module" src="./capture/page.mjs?v=1.0.2"></script>
+  <script type="module" src="./capture/page.mjs?v=1.0.3"></script>
 </head>
 <body>
   <header class="site-header">
@@ -108,7 +108,7 @@
             <p class="capture-note">保留左上角难度、全部盟约名称和右侧敌方信息。两张截图应来自同一局、同一次盟约选择。</p>
             <section id="capture-mark-editor" class="capture-mark-editor" aria-labelledby="capture-mark-title"><div class="capture-mark-heading"><h4 id="capture-mark-title">标记干员与盟约</h4><small id="capture-mark-count">7 项</small></div><p class="capture-note">标记你关心的对象，识别后查看哪些被 BAN。名单独立保存在本机，可随时增删。</p><label class="capture-mark-label" for="capture-mark-search">添加标记</label><input id="capture-mark-search" type="search" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="capture-mark-suggestions" placeholder="输入干员或盟约名字…" autocomplete="off"><div id="capture-mark-suggestions" class="capture-mark-suggestions" role="listbox" aria-label="可添加的干员与盟约" hidden></div><div id="capture-mark-selected" class="capture-mark-selected" aria-label="已标记干员与盟约"></div><p id="capture-mark-empty" class="capture-note" hidden>当前没有标记对象，可以输入名字添加。</p></section>
           </section><section class="capture-box"><div class="capture-result-heading"><h3>文字结果</h3><button type="button" class="text-button" id="capture-copy" disabled>复制文字</button></div><p id="capture-status" class="capture-status" aria-live="polite">等待识别</p><div id="capture-mark-results" class="capture-mark-results" aria-live="polite" hidden></div><pre id="capture-result" tabindex="0"></pre>
-            <button type="button" class="primary-button capture-apply" id="capture-apply" disabled>套用到本局</button><p id="capture-apply-state" class="capture-note" role="status"></p><p class="capture-note">BAN 状态按盟约推断，未直接识别禁用干员名单；本季规则细节待核实，以游戏为准。</p><div id="capture-next" class="capture-actions" hidden><button type="button" class="text-button" data-open-recognized-bans>查看本局 BAN 位 ↗</button><button type="button" class="text-button" data-encyclopedia-section="enemies">查看本局敌人 ↗</button></div>
+            <button type="button" class="primary-button capture-apply" id="capture-apply" disabled>套用到本局</button><p id="capture-apply-state" class="capture-note" role="status" aria-atomic="true"></p><div id="capture-next" class="capture-actions" hidden><button type="button" class="text-button" data-open-recognized-bans>前往干员 BAN 筛选 ↗</button><button type="button" class="text-button" data-encyclopedia-section="enemies">前往敌方资料 · 本局 ↗</button></div><p class="capture-note">BAN 状态按盟约推断，未直接识别禁用干员名单；本季规则细节待核实，以游戏为准。</p>
             <details id="capture-raw-panel" hidden><summary>原始识别文字</summary><pre id="capture-raw"></pre></details>
           </section></div>
           <section class="capture-examples"><h3>正确截图示范 <small>点击放大查看</small></h3><div class="capture-example-grid">
@@ -296,7 +296,11 @@
     </div>
     <ol class="release-history">
       <li>
-        <div class="release-heading"><h3>v1.0.2</h3><span class="release-latest">当前版本</span><time datetime="2026-11-16">2026-11-16</time></div>
+        <div class="release-heading"><h3>v1.0.3</h3><span class="release-latest">当前版本</span><time datetime="2026-11-16">2026-11-16</time></div>
+        <ul><li>套用识别结果后显示常驻确认，说明干员筛选中 BAN 位的具体位置、已设置的盟约，以及敌方资料“本局”的 Boss 与特训类别。</li><li>提供前往干员 BAN 筛选和敌方资料“本局”的直达按钮。</li></ul>
+      </li>
+      <li>
+        <div class="release-heading"><h3>v1.0.2</h3><time datetime="2026-11-16">2026-11-16</time></div>
         <ul><li>识别开始时提示首次加载可能等待数十秒，并显示已用时间。</li><li>区分识别程序、中文模型加载、引擎初始化与文字识别阶段，便于判断等待状态。</li></ul>
       </li>
       <li>

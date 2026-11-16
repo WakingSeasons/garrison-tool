@@ -424,7 +424,20 @@
   document.addEventListener('garrison:apply-recognition',event=>{
     const result=model.applyRecognition(state,event.detail);
     if(result.ok){render();notify('已套用本局 BAN 位与敌方筛选');}
-    document.dispatchEvent(new CustomEvent('garrison:recognition-applied',{detail:{ok:result.ok,message:result.ok?'已套用：本局 BAN 位已替换，敌方资料已切换至本局 Boss 与特训类型。':result.error}}));
+    const message=result.ok?[
+      '✓ 已套用到以下位置',
+      '',
+      '卫戍干员 → 筛选条件 → 本局 BAN 位',
+      state.bannedAlliances.length?`已设置 ${state.bannedAlliances.length} 个不可用盟约：${state.bannedAlliances.join('、')}`:'本局 BAN 位已清空：没有不可用盟约。',
+      '左右检索共用，按现有规则标红或隐藏对应干员。',
+      '',
+      '敌方资料 → 本局',
+      `Boss：${state.sessionContext.boss}`,
+      `特训敌人：${state.sessionContext.types.join('、')}`,
+      '',
+      '原有阵容、左右检索条件与标记名单已保留。'
+    ].join('\n'):result.error;
+    document.dispatchEvent(new CustomEvent('garrison:recognition-applied',{detail:{ok:result.ok,message}}));
   });
   function addMember(id, pane) {
     const operator = data.operators.find(operator => operator.id === id);
