@@ -79,6 +79,14 @@ export async function recognize(source){
     return found;
   }
   for(const region of regions)lines.push(...await readRegion(region));
+  // Retry only unread training labels, excluding their common prefix and
+  // nearby cursor artwork. Accepted values still come from the known types.
+  const firstPass=parseOcrLines(lines),typeCount=firstPass.mode==='同盟模拟'?3:firstPass.mode==='独立模拟'?2:0;
+  for(let row=0;row<typeCount;row++){
+    const y=605+row*70;
+    const alreadyRead=lines.some(line=>line.kind==='type'&&(line.bbox.y0+line.bbox.y1)/2>=y&&(line.bbox.y0+line.bbox.y1)/2<y+70&&parseOcrLines([line]).types.length);
+    if(!alreadyRead)lines.push(...await readRegion({name:'特训类型',x:1635,y,width:95,height:70,psm:7,zoom:4}));
+  }
   const preliminary=parseOcrLines(lines);const clusters=names=>{
     const ys=lines.filter(l=>names.some(n=>clean(l.text).includes(n))&&l.bbox.y0>150&&l.bbox.x0<1280).map(l=>l.bbox.y0).sort((a,b)=>a-b);const rows=[];for(const y of ys){if(!rows.length||y-rows.at(-1).at(-1)>35)rows.push([y]);else rows.at(-1).push(y);}return rows.map(a=>a[Math.floor(a.length/2)]);
   };
@@ -115,6 +123,8 @@ export async function recognize(source){
     }
   }
   const result=parseOcrLines(expanded);const unique=new Map();for(const a of result.alliances){if(a.bbox?.y0<140)continue;const old=unique.get(a.name);if(!old||a.state!=='uncertain')unique.set(a.name,a);}
+  const orderedTypes=parseOcrLines(lines.filter(line=>line.kind==='type').sort((a,b)=>a.bbox.y0-b.bbox.y0)).types;
+  result.types=[...new Set([...orderedTypes,...result.types])];
   // A broad OCR pass can read an icon as an alliance name. Prefer labels
   // verified in their actual grid cells; conflicting cell reads stay unknown.
   const verified=new Map();for(const a of parseOcrLines(slotLines).alliances){const old=verified.get(a.name);verified.set(a.name,old&&old.state!==a.state?{...a,state:'uncertain'}:a);}for(const [name,a]of verified)unique.set(name,a);

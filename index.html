@@ -23,7 +23,7 @@
   <script src="./app.js?v=1.0.3" defer></script>
   <script src="./research.js" defer></script>
   <script src="./site-info.js?v=1.0.1" defer></script>
-  <script type="module" src="./capture/page.mjs?v=1.0.4"></script>
+  <script type="module" src="./capture/page.mjs?v=1.0.5"></script>
 </head>
 <body>
   <header class="site-header">
@@ -296,7 +296,11 @@
     </div>
     <ol class="release-history">
       <li>
-        <div class="release-heading"><h3>v1.0.4</h3><span class="release-latest">当前版本</span><time datetime="2026-11-16">2026-11-16</time></div>
+        <div class="release-heading"><h3>v1.0.5</h3><span class="release-latest">当前版本</span><time datetime="2026-11-16">2026-11-16</time></div>
+        <ul><li>特训类别首轮未读全时，自动对未识别行的类别名称做局部补读，减少前缀和鼠标指针干扰。</li><li>补读结果按原图顺序展示；仍未读出的类别保留待确认，不按数量猜测补齐。</li></ul>
+      </li>
+      <li>
+        <div class="release-heading"><h3>v1.0.4</h3><time datetime="2026-11-16">2026-11-16</time></div>
         <ul><li>修复长 Boss 名称换行后漏识别的问题，支持在领袖名称区域读取和合并多行文字。</li><li>优先采用真实盟约格位的核实结果，避免图标被误读成盟约名称后覆盖点亮状态。</li><li>缺项提示改为“尚未识别或待确认”，不再直接判断为截图不全或要求补第二张。</li></ul>
       </li>
       <li>

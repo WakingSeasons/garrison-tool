@@ -1,4 +1,4 @@
-import {recognize,setProgress} from './recognizer.mjs?v=1.0.4';
+import {recognize,setProgress} from './recognizer.mjs?v=1.0.5';
 import {validateFiles,mergeResults,formatReport} from './model.mjs?v=1.0.4';
 import {initMarkedItems,updateMarkedResult,markedResultText} from './marks.mjs';
 const page=document.querySelector('[data-section-panel=capture]'),$=id=>document.getElementById('capture-'+id);
