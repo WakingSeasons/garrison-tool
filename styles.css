@@ -407,6 +407,45 @@ dialog{padding:0;border:1px solid #dbe6d4;border-radius:10px;color:var(--ink);bo
 .catalog-tag { padding: 2px 6px; color: #36614e; background: var(--accent-soft); border-radius: 4px; font-size: 10px; }
 .catalog-effect { margin-top: 7px; color: #4d6054; font-size: 12px; line-height: 1.75; overflow-wrap: anywhere; }
 .catalog-effect .inline-timing { font-size: inherit; white-space: normal; }
+.strategy-values {
+  margin-top: 8px;
+  border-top: 1px solid #e2e9e1;
+}
+
+.strategy-values summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 30px;
+  color: #29634f;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.strategy-values dl {
+  display: grid;
+  gap: 7px;
+  margin: 0 0 8px;
+  padding: 8px;
+  border-radius: 5px;
+  background: #f3f7f1;
+}
+
+.strategy-values dt { color: #354f40; font-size: 11px; font-weight: 650; }
+.strategy-values dd {
+  margin: 2px 0 0;
+  color: #465c50;
+  font-size: 12px;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+
+.strategy-values-sources {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  font-size: 11px;
+}
 .catalog-card .alliance-rule-list { padding: 0; margin-top: 8px; }
 .catalog-card .alliance-rule { padding: 7px 0; grid-template-columns: minmax(32px, max-content) minmax(0, 1fr); }
 .catalog-link { padding-bottom: 0; }

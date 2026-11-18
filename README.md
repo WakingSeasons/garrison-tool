@@ -4,7 +4,7 @@
 
 《明日方舟》**卫戍协议·规程**的非官方玩家工具，由 [WakingSeasons](https://github.com/WakingSeasons) 制作和维护。支持电脑与手机浏览器，无需登录。
 
-[打开在线工具](https://wakingseasons.github.io/garrison-tool/) · [本次更新：v1.2.0](docs/releases/v1.2.0.md) · [完整更新记录](CHANGELOG.md) · [反馈问题](https://github.com/WakingSeasons/garrison-tool/issues)
+[打开在线工具](https://wakingseasons.github.io/garrison-tool/) · [本次更新：v1.3.0](docs/releases/v1.3.0.md) · [完整更新记录](CHANGELOG.md) · [反馈问题](https://github.com/WakingSeasons/garrison-tool/issues)
 
 ## 能做什么
 
@@ -34,7 +34,7 @@
 
 - **敌方资料**：10 名 Boss、九类特训敌人、179 种候选敌人。Boss 提供终极模拟的开场属性、多人共享血量参考，以及随行敌人的数量和属性。铳、鳍、矩兽可查同盟全场路线；特训敌人可查基础属性。所有卡片支持名称／类别搜索与对应 PRTS 链接。
 - **盟约报告**：查触发人数和盟约效果，也可从干员或阵容上的盟约入口查看。
-- **策略报告**：按角色或策略名检索，提供角色名字、头像和策略效果。
+- **策略报告**：按角色、策略或数值检索，提供角色名字、头像和策略效果。部分策略可展开查看倍率、层数公式、升级节点、使用次数和来源。
 - **装备一览**：按等阶查询装备和联合效果，说明转职占两个装备位置、同名装备合并等区别。
 - **友情链接**：集中进入路标档案馆出怪预览、PRTS 与可露希尔 Wiki 的本季资料。
 

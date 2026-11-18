@@ -8,6 +8,7 @@
   const definitions = window.GARRISON_ALLIANCES;
   const equipment = window.GARRISON_EQUIPMENT;
   const strategies = window.GARRISON_STRATEGIES;
+  const strategyValues = window.GARRISON_STRATEGY_VALUES ?? {};
   const equipmentPage = window.GARRISON_EQUIPMENT_PAGE;
   const enemyPage = window.GARRISON_ENEMY_PAGE;
   const storageKey = 'garrison-research-workspace-v1';
@@ -138,6 +139,18 @@
   function abilityMarkup(text) {
     return escapeHtml(text).replace(/【([^】]+)】/g, '<span class="inline-alliance">$1</span>')
       .replace(/&lt;([^&]+)&gt;/g, '<span class="inline-timing">$1</span>').replaceAll('\n', '<br>');
+  }
+  function strategyValueMarkup(detail, expanded) {
+    if (!detail) return '';
+    const rows = detail.rows.map(([label, body]) =>
+      `<div><dt>${escapeHtml(label)}</dt><dd>${abilityMarkup(body)}</dd></div>`).join('');
+    const links = detail.sources.map(([label, url]) =>
+      `<a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(label)}</a>`).join('');
+    return `<details class="strategy-values"${expanded ? ' open' : ''}>
+      <summary>具体数值 <span class="details-chevron" aria-hidden="true">⌄</span></summary>
+      <dl>${rows}</dl>
+      <div class="strategy-values-sources">${links}</div>
+    </details>`;
   }
   function avatarMarkup(operator, size) {
     if (!operator.avatar) return `<span class="operator-avatar special-avatar" style="--avatar-size:${size}px" aria-hidden="true">特</span>`;
@@ -284,9 +297,13 @@
       ['general', '通用策略', strategy => !strategy.alliance],
       ['linked', '盟约策略', strategy => !!strategy.alliance]
     ].filter(([key]) => selected === 'all' || selected === key).map(([, title, inGroup]) => {
-      const cards = strategies.filter(strategy => inGroup(strategy) && matches(
-        strategy.name, strategy.characterName, strategy.effect, strategy.alliance || '', title, `${strategy.initialLife}点`
-      )).map(strategy => `<article class="catalog-card" data-report-strategy="${escapeHtml(strategy.name)}">
+      const cards = strategies.filter(inGroup).flatMap(strategy => {
+        const detail = strategyValues[strategy.name];
+        const detailMatch = Boolean(needle && detail && matches(...detail.rows.flat()));
+        const overviewMatch = matches(strategy.name, strategy.characterName, strategy.effect,
+          strategy.alliance || '', title, `${strategy.initialLife}点`);
+        if (!overviewMatch && !detailMatch) return [];
+        return `<article class="catalog-card" data-report-strategy="${escapeHtml(strategy.name)}">
         <div class="catalog-card-heading strategy-card-heading">
           <div class="strategy-identity">
             <img src="${escapeHtml(strategy.avatar)}" alt="" width="42" height="42" loading="lazy" decoding="async">
@@ -296,7 +313,9 @@
         </div>
         <p class="catalog-meta">初始目标生命值 <strong>${strategy.initialLife}</strong></p>
         <p class="catalog-effect">${abilityMarkup(strategy.effect)}</p>
-      </article>`);
+        ${strategyValueMarkup(detail, detailMatch && !overviewMatch)}
+      </article>`;
+      });
       total += cards.length;
       return reportGroup(title, cards);
     });

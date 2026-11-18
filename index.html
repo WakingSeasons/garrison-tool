@@ -7,11 +7,12 @@
   <meta name="description" content="明日方舟卫戍协议·规程玩家工具：按特质与联动检索干员，并排配队、管理本局 BAN 位，查询敌人、策略与装备，支持截图识别本局信息。">
   <title>卫戍协议·规程 · 盟约与阵容研究</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='8' fill='%23212c32'/%3E%3Cpath d='M11 10h18L20 30Z' fill='%2376baa9'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="./styles.css?v=1.2.0">
+  <link rel="stylesheet" href="./styles.css?v=1.3.0">
   <link rel="stylesheet" href="./capture/page.css?v=1.1.0">
   <script src="./data.js" defer></script>
   <script src="./alliances.js" defer></script>
   <script src="./strategy-data.js?v=1.1.0" defer></script>
+  <script src="./strategy-values.js?v=1.3.0" defer></script>
   <script src="./equipment-data.js" defer></script>
   <script src="./research-data.js" defer></script>
   <script src="./research-query.js" defer></script>
@@ -24,7 +25,7 @@
   <script src="./enemy-stats-data.js?v=1.2.0" defer></script>
   <script src="./enemy-stats.js?v=1.2.0" defer></script>
   <script src="./enemies.js?v=1.2.0" defer></script>
-  <script src="./app.js?v=1.1.0" defer></script>
+  <script src="./app.js?v=1.3.0" defer></script>
   <script src="./research.js" defer></script>
   <script src="./site-info.js?v=1.1.0" defer></script>
   <script type="module" src="./capture/page.mjs?v=1.1.0"></script>
@@ -151,7 +152,7 @@
         <footer class="catalog-footer"><a href="https://nga.178.com/read.php?tid=47877197" target="_blank" rel="noopener noreferrer">规程数据 · 原讨论来源 ↗</a></footer>
       </section>
       <section class="catalog-page" data-section-panel="strategies" aria-labelledby="strategy-report-title" hidden>
-        <div class="catalog-heading"><p class="eyebrow">STRATEGY REPORT</p><h2 id="strategy-report-title">策略报告</h2><p>在顶部按角色或策略名称搜索，查看初始目标生命值、关联盟约、使用条件和效果。</p></div>
+        <div class="catalog-heading"><p class="eyebrow">STRATEGY REPORT</p><h2 id="strategy-report-title">策略报告</h2><p>按角色、策略或效果搜索。点「具体数值」查看补充的倍率、层数公式和使用次数。</p></div>
         <div class="catalog-controls">
           <div class="filter-options" role="group" aria-label="策略类型">
             <button type="button" class="filter-button selected" data-catalog-filter="all" aria-pressed="true">全部</button>
@@ -329,7 +330,7 @@
       <li>
         <span class="feature-number" aria-hidden="true">09</span>
         <h3>策略与装备</h3>
-        <p>按角色查策略与效果，按等阶查装备；联合装备标明具体效果、转职占位和合并方式。友情链接集中放在导航末项。</p>
+        <p>按角色、策略或数值搜索，展开「具体数值」查看倍率和使用次数。装备一览可按等阶查询，并提供联合效果、转职占位和合并方式。</p>
       </li>
     </ol>
   </dialog>
@@ -343,7 +344,11 @@
     </div>
     <ol class="release-history">
       <li>
-        <div class="release-heading"><h3>v1.2.0</h3><span class="release-latest">当前版本</span><time datetime="2026-11-19">2026-11-19</time></div>
+        <div class="release-heading"><h3>v1.3.0</h3><span class="release-latest">当前版本</span><time datetime="2026-11-19">2026-11-19</time></div>
+        <ul><li>为 28 项策略补充「具体数值」，包括倍率、随盟约层数变化的公式、升级节点和使用次数。</li><li>分开列出「黑白相易」的炎佑基础属性、6 炎继承与 9 炎效果，并附资料来源。</li><li>顶部搜索可检索补充数值。仅命中具体数值时，自动展开对应详情。</li></ul>
+      </li>
+      <li>
+        <div class="release-heading"><h3>v1.2.0</h3><time datetime="2026-11-19">2026-11-19</time></div>
         <ul><li>新增「查看相关波次属性」，提供终极模拟单人开场面板、2～4 人共享血量参考，以及随行敌人的属性和数量。</li><li>覆盖 10 名领袖的普通领袖战及适用的隐秘核心。随机替换位与固定随行分开展示。</li><li>新增铳、鳍、矩兽的同盟全场路线图，并补充特训敌人的基础属性。</li><li>社区推算面板、多人共享血量和巡逻走线均注明实战核实情况。</li></ul>
       </li>
       <li>
