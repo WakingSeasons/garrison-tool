@@ -7,7 +7,7 @@
   <meta name="description" content="明日方舟卫戍协议·规程玩家工具：按特质与联动检索干员，并排配队、管理本局 BAN 位，查询敌人、策略与装备，支持截图识别本局信息。">
   <title>卫戍协议·规程 · 盟约与阵容研究</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='8' fill='%23212c32'/%3E%3Cpath d='M11 10h18L20 30Z' fill='%2376baa9'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="./styles.css?v=1.1.0">
+  <link rel="stylesheet" href="./styles.css?v=1.2.0">
   <link rel="stylesheet" href="./capture/page.css?v=1.1.0">
   <script src="./data.js" defer></script>
   <script src="./alliances.js" defer></script>
@@ -19,7 +19,11 @@
   <script src="./workspace.js?v=1.1.0" defer></script>
   <script src="./equipment.js" defer></script>
   <script src="./enemy-data.js?v=1.1.0" defer></script>
-  <script src="./enemies.js?v=1.1.0" defer></script>
+  <script src="./boss-route-data.js?v=1.2.0" defer></script>
+  <script src="./boss-routes.js?v=1.2.0" defer></script>
+  <script src="./enemy-stats-data.js?v=1.2.0" defer></script>
+  <script src="./enemy-stats.js?v=1.2.0" defer></script>
+  <script src="./enemies.js?v=1.2.0" defer></script>
   <script src="./app.js?v=1.1.0" defer></script>
   <script src="./research.js" defer></script>
   <script src="./site-info.js?v=1.1.0" defer></script>
@@ -226,6 +230,47 @@
     <div class="transfer-actions"><button type="button" class="primary-button" id="transfer-apply">应用转职配装</button></div>
   </dialog>
   <dialog id="alliance-dialog" aria-labelledby="alliance-dialog-title"><div class="modal-heading"><div><p class="eyebrow">ALLIANCE REFERENCE</p><h2 id="alliance-dialog-title"></h2></div><button type="button" class="icon-button" id="alliance-dialog-close" aria-label="关闭盟约说明">×</button></div><div id="alliance-dialog-content"></div></dialog>
+  <dialog class="boss-route-dialog" id="boss-route-dialog" aria-labelledby="boss-route-title">
+    <div class="modal-heading">
+      <h2 id="boss-route-title"></h2>
+      <form method="dialog"><button class="icon-button" aria-label="关闭路线图" autofocus>×</button></form>
+    </div>
+    <div class="boss-route-controls">
+      <label>战场 <select id="boss-route-map"></select></label>
+      <span>同盟双人场地</span>
+    </div>
+    <p class="boss-route-legend">出生 → ① → ② → ③ → ① 循环</p>
+    <div class="boss-route-viewport">
+      <button class="boss-route-zoom" id="boss-route-zoom" type="button" aria-label="放大路线图" aria-pressed="false">
+        <canvas id="boss-route-chart" width="2040" height="600" role="img"></canvas>
+        <span>点击放大</span>
+      </button>
+    </div>
+    <p class="boss-route-note">普通领袖战。巡逻点来自客户端配置。点间走线按战场初始地形与装置推算，尚未用实战逐张核对。</p>
+    <div class="boss-route-sources">
+      <a id="boss-route-prts" target="_blank" rel="noopener noreferrer">PRTS 战场底图 ↗</a>
+      <a id="boss-route-source" target="_blank" rel="noopener noreferrer">路线配置 ↗</a>
+      <a href="https://github.com/sganggs/Stronghold-Protocol/blob/55f528e9fc4872388360ee85e13eca8594856204/server/sim/grid.js#L425" target="_blank" rel="noopener noreferrer">社区寻路算法 ↗</a>
+    </div>
+  </dialog>
+  <dialog class="enemy-stats-dialog" id="enemy-stats-dialog" aria-labelledby="enemy-stats-title">
+    <div class="modal-heading">
+      <h2 id="enemy-stats-title"></h2>
+      <form method="dialog"><button class="icon-button" aria-label="关闭属性" autofocus>×</button></form>
+    </div>
+    <div class="enemy-stats-controls" id="enemy-stats-controls" hidden>
+      <label id="enemy-stats-phase-field">领袖阶段 <select id="enemy-stats-phase">
+        <option value="normal">普通领袖</option>
+        <option value="hidden">隐秘核心</option>
+      </select></label>
+    </div>
+    <div id="enemy-stats-content"></div>
+    <div class="boss-route-sources">
+      <a id="enemy-stats-prts" target="_blank" rel="noopener noreferrer">PRTS 机制与详情 ↗</a>
+      <a id="enemy-stats-source" target="_blank" rel="noopener noreferrer">数值来源 ↗</a>
+      <a id="enemy-stats-calculation" href="https://github.com/sganggs/Stronghold-Protocol/tree/55f528e9fc4872388360ee85e13eca8594856204/data/versions/act3autochess-v3_1" target="_blank" rel="noopener noreferrer" hidden>社区面板配置 ↗</a>
+    </div>
+  </dialog>
   <dialog id="relation-dialog" aria-labelledby="relation-title" aria-describedby="relation-description">
     <div class="relation-panel-heading"><div><p class="eyebrow" id="relation-kind">MECHANISM LIBRARY</p><h2 id="relation-title">机制联动</h2></div><div class="relation-panel-actions"><button type="button" id="relation-back" class="text-button" hidden>← 返回</button><button type="button" class="icon-button" id="relation-close" aria-label="关闭联动面板">×</button></div></div>
     <div class="relation-panel-intro"><p id="relation-description"></p><p id="relation-context"></p><div class="relation-tip" id="relation-tip" hidden></div></div>
@@ -279,7 +324,7 @@
       <li>
         <span class="feature-number" aria-hidden="true">08</span>
         <h3>敌方资料</h3>
-        <p>按 Boss 与九类特训敌人查看头像、名称和 PRTS 链接；套用识别后，「本局」集中显示对应领袖与候选敌人。</p>
+        <p>在 Boss 卡片查看终极模拟的开场属性、多人血量和随行敌人。铳、鳍、矩兽可查看同盟全场巡逻路线。特训敌人可查基础属性与 PRTS 详情。</p>
       </li>
       <li>
         <span class="feature-number" aria-hidden="true">09</span>
@@ -298,7 +343,11 @@
     </div>
     <ol class="release-history">
       <li>
-        <div class="release-heading"><h3>v1.1.0</h3><span class="release-latest">当前版本</span><time datetime="2026-11-18">2026-11-18</time></div>
+        <div class="release-heading"><h3>v1.2.0</h3><span class="release-latest">当前版本</span><time datetime="2026-11-19">2026-11-19</time></div>
+        <ul><li>新增「查看相关波次属性」，提供终极模拟单人开场面板、2～4 人共享血量参考，以及随行敌人的属性和数量。</li><li>覆盖 10 名领袖的普通领袖战及适用的隐秘核心。随机替换位与固定随行分开展示。</li><li>新增铳、鳍、矩兽的同盟全场路线图，并补充特训敌人的基础属性。</li><li>社区推算面板、多人共享血量和巡逻走线均注明实战核实情况。</li></ul>
+      </li>
+      <li>
+        <div class="release-heading"><h3>v1.1.0</h3><time datetime="2026-11-18">2026-11-18</time></div>
         <ul><li>支持暂停截图和「套用已识别内容」，模式、难度缺失不再阻止已确认字段使用。</li><li>新增折叠「修正／补全」，可编辑模式、难度、Boss、特训类别和盟约状态。</li><li>冲突字段逐项确认；未识别字段沿用旧值并标记待核对，未知盟约不会误隐藏干员。</li><li>套用确认与敌方“本局”分别说明更新、沿用和数量未核对状态，刷新后继续保留。</li></ul>
       </li>
       <li>

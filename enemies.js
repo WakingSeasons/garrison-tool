@@ -14,7 +14,28 @@
   function card(enemy,boss){
     const link=node('a','enemy-reference-card'+(boss?' enemy-reference-boss':''));link.href='https://prts.wiki/w/'+encodeURIComponent(enemy.name);link.target='_blank';link.rel='noopener noreferrer';link.title='在 PRTS 查看 '+enemy.name;link.setAttribute('aria-label',enemy.name+'，在 PRTS 查看');link.dataset.enemyId=enemy.id;link.dataset.strength=String(enemy.strength);
     const image=document.createElement('img');image.src=enemy.image;image.alt='';image.width=48;image.height=48;image.loading='lazy';image.decoding='async';image.addEventListener('error',()=>{image.hidden=true;link.prepend(node('span','enemy-reference-fallback','?'));},{once:true});
-    link.append(image,node('span','enemy-reference-name',enemy.name),node('span','enemy-reference-arrow','↗'));return link;
+    link.append(image,node('span','enemy-reference-name',enemy.name),node('span','enemy-reference-arrow','↗'));
+    const entry=node('div','enemy-reference-entry');
+    const actions=node('div','enemy-reference-actions');
+    const statsLabel=boss?'查看相关波次属性':'查看属性';
+    const stats=node('button','enemy-stats-trigger',statsLabel);
+    stats.type='button';
+    stats.setAttribute('aria-label',statsLabel+'：'+enemy.name);
+    stats.setAttribute('aria-haspopup','dialog');
+    stats.setAttribute('aria-controls','enemy-stats-dialog');
+    stats.onclick=()=>window.GARRISON_ENEMY_STAT_VIEW.open(enemy);
+    actions.append(stats);
+    if(boss&&window.GARRISON_BOSS_ROUTE_VIEW?.has(enemy.id)){
+      const route=node('button','enemy-route-trigger','查看路线');
+      route.type='button';
+      route.setAttribute('aria-label','查看'+enemy.name+'路线');
+      route.setAttribute('aria-haspopup','dialog');
+      route.setAttribute('aria-controls','boss-route-dialog');
+      route.onclick=()=>window.GARRISON_BOSS_ROUTE_VIEW.open(enemy);
+      actions.append(route);
+    }
+    entry.append(link,actions);
+    return entry;
   }
   function render(){
     state.initialized=true;const needle=normalize(state.query);const sections=[];let total=0;
