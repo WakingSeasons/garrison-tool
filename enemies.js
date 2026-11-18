@@ -26,7 +26,9 @@
       if(!boss)list.sort((a,b)=>a.strength-b.strength||a.id.localeCompare(b.id));
       if(!list.length)return;total+=list.length;
       const group=node('section','catalog-group enemy-reference-group');group.dataset.enemyGroup=key;
-      const heading=node('h3','',title);heading.append(node('small','',String(list.length)));group.append(heading);
+      const retained=current&&(boss?state.session.retainedBoss:state.session.retainedTypes);
+      const heading=node('h3','',title+(retained?' · 沿用，待核对':''));heading.append(node('small','',String(list.length)));group.append(heading);
+      group.classList.toggle('is-retained',Boolean(retained));
       if(!boss)group.append(node('p','enemy-reference-order','较弱 → 较强'));
       const grid=node('div','enemy-reference-grid');for(const e of list)grid.append(card(e,boss));group.append(grid);sections.push(group);
     };
@@ -34,11 +36,14 @@
     for(const [name,group]of Object.entries(catalog.groups))add(name,'特训敌人 · '+name,group.ids);
     results.replaceChildren(...sections);if(!sections.length){const empty=node('div','relation-empty');empty.append(node('h3','','没有匹配的敌人'),node('p','','可以换个名称，或选择其他类别。'));results.append(empty);}
     const current=state.category==='current'&&state.session;
-    count.textContent=current?'本局：'+state.session.boss+' · '+state.session.types.join(' / '):state.category==='all'&&!needle?bossIds.length+' 名领袖 · '+candidateCount+' 种特训敌人':'显示 '+total+' 项';
+    count.textContent=current?'本局：'+(state.session.boss||'Boss未指定')+' · '+(state.session.types.join(' / ')||'特训未指定'):state.category==='all'&&!needle?bossIds.length+' 名领袖 · '+candidateCount+' 种特训敌人':'显示 '+total+' 项';
+    const review=document.getElementById('enemy-session-review'),notes=[];
+    if(current){if(!state.session.boss)notes.push('Boss未指定');if(state.session.retainedBoss)notes.push('Boss沿用原设置，待核对');if(state.session.retainedTypes)notes.push('特训沿用原设置，待核对');if(state.session.retainedMode)notes.push('模式沿用原设置，待核对');else if(!state.session.mode)notes.push('模式未指定');if(state.session.retainedDifficulty)notes.push('难度沿用原设置，待核对');if(!state.session.typesComplete)notes.push('仅展示当前已知类别，特训总数尚未核对完整');}
+    review.hidden=!notes.length;review.textContent=notes.join('；');
     for(const button of page.querySelectorAll('[data-enemy-category]')){const selected=button.dataset.enemyCategory===state.category;button.classList.toggle('selected',selected);button.setAttribute('aria-pressed',String(selected));}
     results.scrollTop=0;
   }
   const filters=page.querySelector('.enemy-category-options');
   for(const category of categories){const button=node('button','filter-button',category==='current'?'本局':category==='all'?'全部':category==='boss'?'Boss':category);button.type='button';button.dataset.enemyCategory=category;button.hidden=category==='current';button.setAttribute('aria-pressed',String(category==='all'));if(category==='all')button.classList.add('selected');button.onclick=()=>{state.category=category;render();};filters.append(button);}
-  window.GARRISON_ENEMY_PAGE={setSession(session){if(JSON.stringify(session)===JSON.stringify(state.session))return;state.session=session;state.category=session?'current':'all';page.querySelector('[data-enemy-category=current]').hidden=!session;state.initialized=false;},setQuery(query){if(state.initialized&&query===state.query)return;state.query=query;render();}};
+  window.GARRISON_ENEMY_PAGE={setSession(session){if(session&&!session.boss&&!session.types.length)session=null;if(JSON.stringify(session)===JSON.stringify(state.session))return;state.session=session;state.category=session?'current':'all';page.querySelector('[data-enemy-category=current]').hidden=!session;state.initialized=false;},setQuery(query){if(state.initialized&&query===state.query)return;state.query=query;render();}};
 })();

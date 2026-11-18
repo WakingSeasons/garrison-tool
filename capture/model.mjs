@@ -17,30 +17,39 @@ export function parseOcrLines(lines) {
   return r;
 }
 export function mergeResults(results) {
-  const out={alliances:[],types:[],conflicts:[],missing:[],complete:false};
+  const out={alliances:[],types:[],conflictFields:{}};
   for(const key of ['mode','difficulty','level','boss']) {
     const values=[...new Set(results.map(r=>r[key]).filter(v=>v!==null&&v!==undefined&&v!==''))];
     out[key]=values.length===1?values[0]:null;
-    if(values.length>1)out.conflicts.push(({mode:'模拟方式',difficulty:'难度',level:'等级',boss:'Boss'})[key]+'不同：'+values.join(' / '));
+    if(values.length>1)out.conflictFields[key]=true;
   }
-  const typeSets=results.map(r=>r.types||[]).filter(a=>a.length);
-  if(typeSets.length>1&&typeSets.every(a=>a.length>=2)&&typeSets.some(a=>a.some(t=>!typeSets[0].includes(t))))out.conflicts.push('特训敌人类型不一致，请确认两张截图来自同一局。');
+  const sets=results.map(r=>r.types||[]).filter(a=>a.length);
+  if(sets.length>1&&sets.every(a=>a.length>=2)&&sets.some(a=>a.some(t=>!sets[0].includes(t))))out.conflictFields.types=true;
   out.types=[...new Set(results.flatMap(r=>r.types||[]))];
-  const map=new Map();
+  const map=new Map(),conflicting=new Set();
   for(const a of results.flatMap(r=>r.alliances||[])){
     const old=map.get(a.name);
     if(!old)map.set(a.name,{...a});
-    else if(old.state==='conflict')continue;
-    else if(a.state!=='uncertain'&&old.state!=='uncertain'&&old.state!==a.state){map.set(a.name,{...a,state:'conflict'});out.conflicts.push(a.name+'状态不同，请确认是否切换了选择或混入另一局。');}
+    else if(conflicting.has(a.name))continue;
+    else if(a.state!=='uncertain'&&old.state!=='uncertain'&&old.state!==a.state){conflicting.add(a.name);map.set(a.name,{...a,state:'uncertain'});}
     else if(old.state==='uncertain')map.set(a.name,{...a});
   }
-  out.alliances=[...map.values()].map(a=>({...a,state:a.state==='conflict'?'uncertain':a.state}));
-  if(!out.mode||!out.difficulty)out.missing.push('模拟方式 / 难度');
+  if(conflicting.size)out.conflictFields.alliances=[...conflicting];
+  out.alliances=[...map.values()];
+  return assessResult(out);
+}
+export function assessResult(value) {
+  const out={...value,types:[...new Set(value.types||[])],alliances:(value.alliances||[]).map(a=>({...a})),conflictFields:{...value.conflictFields},missing:[],conflicts:[]};
+  if(value.conflicts?.length&&!value.conflictFields)out.conflicts=[...value.conflicts];
+  for(const [key,label]of [['mode','模拟方式'],['difficulty','难度'],['level','等级'],['boss','Boss'],['types','特训类别']])if(out.conflictFields[key])out.conflicts.push(label+'信息冲突，请手动确认。');
+  for(const name of out.conflictFields.alliances||[])out.conflicts.push(name+'状态不同，请手动确认。');
   if(!out.boss)out.missing.push('Boss');
-  const expected=out.mode==='独立模拟'?2:3;
-  if(out.types.length<expected)out.missing.push('特训敌人（'+out.types.length+'/'+expected+'）');
+  const expected=out.mode==='独立模拟'?2:out.mode==='同盟模拟'?3:0;
+  if(!expected)out.missing.push('模式未指定：已识别 '+out.types.length+' 类特训，未核对总数（可补选模式）');
+  else if(out.types.length<expected)out.missing.push('特训敌人（'+out.types.length+'/'+expected+'）');
+  else if(out.types.length>expected)out.conflicts.push(out.mode+'应为 '+expected+' 类特训，当前勾选 '+out.types.length+' 类，请修正。');
   for(const [label,names]of [['核心盟约',CORE],['附加盟约',ADDON]]){
-    const missing=names.filter(n=>!out.alliances.some(a=>a.name===n&&a.state!=='uncertain'));
+    const missing=names.filter(n=>!out.alliances.some(a=>a.name===n&&['active','inactive'].includes(a.state)));
     if(missing.length)out.missing.push(label+'：'+missing.join('、'));
   }
   out.complete=!out.missing.length&&!out.conflicts.length;
@@ -53,7 +62,8 @@ export function validateFiles(files,current=0) {
   return '';
 }
 export function formatReport(r,count) {
-  const lines=['卫戍协议·规程 · 本局识别结果','', '模拟方式：'+(r.mode||'未识别'),'难度：'+(r.difficulty||'未识别'),'Boss：'+(r.boss||'未识别'),'特训敌人：'+(r.types.join('、')||'未识别'),''];
+  const lines=['卫戍协议·规程 · 本局识别结果','', '模拟方式：'+(r.mode||'未指定（可选）'),'难度：'+(r.difficulty||'未指定（可选）'),'Boss：'+(r.boss||'未识别'),'特训敌人：'+(r.types.join('、')||'未识别')+(!r.mode?'（模式未指定，数量未核对）':''),''];
+  if(r.manualFields?.length)lines.push('手动修正：'+r.manualFields.join('、'),'');
   for(const [title,names]of [['核心盟约',CORE],['附加盟约',ADDON]]) {
     lines.push(title);
     for(const[state,label]of [['active','点亮'],['inactive','置灰'],['uncertain','待确认']]){
@@ -62,9 +72,9 @@ export function formatReport(r,count) {
     }
     const unseen=names.filter(n=>!r.alliances.some(a=>a.name===n));if(unseen.length)lines.push('  未识别：'+unseen.join('、'));lines.push('');
   }
-  if(r.conflicts.length)lines.push('⚠ 图片信息冲突',...r.conflicts.map(s=>'  '+s),'请移除不同局的截图；冲突消除前不使用合并结果。','');
-  if(r.missing.length)lines.push('以下信息尚未识别或待确认（不一定是截图缺失）',...r.missing.map(s=>'  缺少 / 待确认：'+s),count<2?'请先对照原图核对；如文字过小或被遮挡，可补一张同局截图，拍清对应位置。':'已达到两张上限；如需补图，请先移除一张，再上传同局的清晰截图。','两张截图应来自同一局、同一次盟约选择，尽量保留重叠信息。','');
+  if(r.conflicts.length)lines.push('⚠ 图片信息冲突',...r.conflicts.map(s=>'  '+s),'冲突项目不会覆盖原设置；可展开「修正／补全」确认，其他确认内容仍可套用。','');
+  if(r.missing.length)lines.push('以下信息尚未识别或待确认（不一定是截图缺失）',...r.missing.map(s=>'  待确认：'+s),'可先套用已识别内容，或展开「修正／补全」对照原图填写。',count<2?'也可补一张同局截图，拍清对应位置。':'已达到两张上限；如需补图，请先移除一张。','两张截图应来自同一局、同一次盟约选择。','');
   else if(!r.conflicts.length)lines.push('本次基础字段已齐全，请对照原图核对。','');
-  lines.push('可将上述盟约状态套用到 Wiki 的本局 BAN 位，并更新敌方资料的本局筛选。标记对象的 BAN 状态按盟约推断，尚未直接识别画面底部的禁用干员名单，请对照游戏核对。');
+  lines.push('套用只更新确认字段；未识别的项目沿用原设置并标记待核对。标记对象的 BAN 状态按盟约推断，尚未直接识别禁用干员头像名单，请对照游戏核对。');
   return lines.join('\n');
 }

@@ -31,9 +31,9 @@
       .sort((a,b)=>score(a)-score(b)||a.name.localeCompare(b.name,'zh-CN')).slice(0,8);
   }
   function markedItemStatus(item,result) {
-    if(!result||result.conflicts?.length||!Array.isArray(result.alliances))return 'unknown';
+    if(!result||result.conflicts?.length&&!Object.keys(result.conflictFields||{}).length||!Array.isArray(result.alliances))return 'unknown';
     const states=new Map();
-    for(const row of result.alliances){if(!knownAlliances.has(row.name))continue;const status=['active','inactive'].includes(row.state)?row.state:'unknown';states.set(row.name,states.has(row.name)&&states.get(row.name)!==status?'unknown':status);}
+    for(const row of result.alliances){if(!knownAlliances.has(row.name))continue;const status=!result.conflictFields?.alliances?.includes(row.name)&&['active','inactive'].includes(row.state)?row.state:'unknown';states.set(row.name,states.has(row.name)&&states.get(row.name)!==status?'unknown':status);}
     if(item.kind==='alliance')return states.get(item.name)==='active'?'available':states.get(item.name)==='inactive'?'banned':'unknown';
     const operator=data.operators.find(o=>o.id===item.id);if(!operator)return 'unknown';
     const inactive=[...states].filter(([,s])=>s==='inactive').map(([n])=>n);
@@ -50,7 +50,7 @@
   function create() {
     return {
       version: 1, panes: [pane("primary")], members: [], rosterOpen: false,
-      bannedAlliances: [], hideBannedOperators: false, personnelDocument: false, sessionContext: null, markedItems: defaultMarkedItems(),
+      bannedAlliances: [], unconfirmedAlliances: [], hideBannedOperators: false, personnelDocument: false, sessionContext: null, markedItems: defaultMarkedItems(),
       section: "operators", sidebarCollapsed: false, catalogQueries: { alliances: "", strategies: "", equipment: "", enemies: "" }
     };
   }
@@ -83,6 +83,7 @@
       }
       state.rosterOpen = value.rosterOpen === true;
       state.bannedAlliances = [...new Set(strings(value.bannedAlliances).filter(name => knownAlliances.has(name)))];
+      state.unconfirmedAlliances = [...new Set(strings(value.unconfirmedAlliances).filter(name => knownAlliances.has(name)))];
       state.hideBannedOperators = value.hideBannedOperators === true;
       state.personnelDocument = value.personnelDocument === true;
       state.sessionContext = normalizeSession(value.sessionContext);
@@ -109,6 +110,12 @@
   function isBanned(operator, bannedAlliances) {
     return operator.tier !== "special" && operator.alliances.length > 0 &&
       operator.alliances.every(name => bannedAlliances.includes(name));
+  }
+  function operatorStatus(operator,state) {
+    const pending=state.unconfirmedAlliances||[];
+    const confirmed=state.bannedAlliances.filter(name=>!pending.includes(name));
+    if(isBanned(operator,confirmed))return 'banned';
+    return isBanned(operator,[...confirmed,...pending])?'unknown':'available';
   }
   function addMember(state, id, elite = false) {
     if (!knownIds.has(id) || state.members.some(member => member.id === id)) return false;
@@ -166,24 +173,59 @@
       .map(name => allianceProgress(name, members));
   }
   function normalizeSession(value) {
-    if(!value||!['独立模拟','同盟模拟'].includes(value.mode))return null;
+    if(!value||typeof value!=='object')return null;
     const catalog=window.GARRISON_ENEMIES;
-    if(!catalog||!Object.hasOwn(catalog.bosses,value.boss)||!Array.isArray(value.types))return null;
-    const types=[...new Set(value.types)];const expected=value.mode==='独立模拟'?2:3;
-    if(types.length!==expected||types.some(t=>!Object.hasOwn(catalog.groups,t)))return null;
-    if(typeof value.difficulty!=='string'||!(/^(规程等级(?:[1-9]|1\d|20)|标准模拟|险境模拟|绝境模拟|终极模拟|极速模拟)$/.test(value.difficulty)))return null;
-    return {mode:value.mode,difficulty:value.difficulty,level:Number.isInteger(value.level)&&value.level>=1&&value.level<=20?value.level:null,boss:value.boss,types};
+    if(!catalog)return null;
+    const mode=['独立模拟','同盟模拟'].includes(value.mode)?value.mode:null;
+    const difficulty=validDifficulty(value.difficulty)?value.difficulty:null;
+    const boss=Object.hasOwn(catalog.bosses,value.boss)?value.boss:null;
+    const types=[...new Set(strings(value.types).filter(t=>Object.hasOwn(catalog.groups,t)))].slice(0,3);
+    if(!boss&&!types.length&&!mode&&!difficulty)return null;
+    const expected=mode==='独立模拟'?2:mode==='同盟模拟'?3:0;
+    return {mode,difficulty,level:Number.isInteger(value.level)&&value.level>=1&&value.level<=20?value.level:null,boss,types,
+      typesComplete:value.typesComplete!==false&&!value.retainedMode&&Boolean(expected&&types.length===expected),retainedBoss:value.retainedBoss===true,retainedTypes:value.retainedTypes===true,
+      retainedMode:value.retainedMode===true,retainedDifficulty:value.retainedDifficulty===true,retainedLevel:value.retainedLevel===true};
+  }
+  function validDifficulty(value){return typeof value==='string'&&/^(规程等级(?:[1-9]|1\d|20)|标准模拟|险境模拟|绝境模拟|终极模拟|极速模拟)$/.test(value);}
+  function recognitionPlan(raw){
+    const error='没有可套用的确认内容，请先修正／补全或补充截图。';
+    const invalid=()=>({ok:false,error:'识别结果包含无效字段，请重新核对。'});
+    if(!raw||typeof raw!=='object'||Array.isArray(raw))return{ok:false,error};
+    const catalog=window.GARRISON_ENEMIES;if(!catalog)return{ok:false,error};
+    const cf=raw.conflictFields||{};
+    if(typeof cf!=='object'||Array.isArray(cf)||raw.conflicts?.length&&!Object.keys(cf).length)return{ok:false,error:'图片信息冲突，请先修正／补全对应项目。'};
+    if(cf.alliances!==undefined&&!Array.isArray(cf.alliances))return invalid();
+    if(['mode','difficulty','level','boss','types'].some(key=>cf[key]!==undefined&&typeof cf[key]!=='boolean'))return invalid();
+    if(raw.mode!=null&&raw.mode!==''&&!['独立模拟','同盟模拟'].includes(raw.mode))return invalid();
+    if(raw.difficulty!=null&&raw.difficulty!==''&&!validDifficulty(raw.difficulty))return invalid();
+    if(raw.boss!=null&&raw.boss!==''&&!Object.hasOwn(catalog.bosses,raw.boss))return invalid();
+    if(raw.types!==undefined&&(!Array.isArray(raw.types)||raw.types.some(t=>!Object.hasOwn(catalog.groups,t))))return invalid();
+    if(raw.alliances!==undefined&&!Array.isArray(raw.alliances))return invalid();
+    const rows=raw.alliances||[],pending=strings(cf.alliances);
+    if(rows.some(a=>!a||!knownAlliances.has(a.name)||!['active','inactive','uncertain'].includes(a.state))||new Set(rows.map(a=>a.name)).size!==rows.length||pending.some(n=>!knownAlliances.has(n)))return invalid();
+    const alliances=rows.filter(a=>a.state!=='uncertain'&&!pending.includes(a.name)).map(a=>({name:a.name,state:a.state}));
+    const unresolvedAlliances=[...knownAlliances].filter(n=>!alliances.some(a=>a.name===n));
+    const mode=!cf.mode&&raw.mode||null,difficulty=!cf.difficulty&&raw.difficulty||null;
+    const expected=mode==='独立模拟'?2:mode==='同盟模拟'?3:0;
+    const candidates=[...new Set(raw.types||[])];
+    const types=!cf.types&&candidates.length&&candidates.length<=3&&(!expected||candidates.length<=expected)?candidates:null;
+    const boss=!cf.boss&&raw.boss||null;
+    const ok=Boolean(alliances.length||boss||types||mode||difficulty);
+    return{ok,error:ok?'':error,alliances,unresolvedAlliances,mode,difficulty,boss,types,expected,
+      level:!cf.level&&Number.isInteger(raw.level)&&raw.level>=1&&raw.level<=20?raw.level:null,
+      typesComplete:Boolean(types&&expected&&types.length===expected),partial:Boolean(unresolvedAlliances.length||!boss||!types||!expected||types.length!==expected)};
   }
   function applyRecognition(state,result) {
-    const error='识别信息不完整或有冲突，请补充截图并核对后再套用。';
-    if(!result||result.complete!==true||result.conflicts?.length)return{ok:false,error};
-    const session=normalizeSession(result),rows=result.alliances;
-    if(!session||!Array.isArray(rows)||rows.length!==knownAlliances.size)return{ok:false,error};
-    if(new Set(rows.map(a=>a?.name)).size!==knownAlliances.size||rows.some(a=>!a||!knownAlliances.has(a.name)||!['active','inactive'].includes(a.state)))return{ok:false,error};
-    state.bannedAlliances=rows.filter(a=>a.state==='inactive').map(a=>a.name);
-    state.sessionContext=session;
+    const plan=recognitionPlan(result);if(!plan.ok)return plan;
+    const resolved=new Set(plan.alliances.map(a=>a.name)),old=normalizeSession(state.sessionContext);
+    state.bannedAlliances=[...state.bannedAlliances.filter(n=>!resolved.has(n)),...plan.alliances.filter(a=>a.state==='inactive').map(a=>a.name)];
+    state.unconfirmedAlliances=plan.unresolvedAlliances;
+    state.sessionContext=normalizeSession({mode:plan.mode||old?.mode||null,difficulty:plan.difficulty||old?.difficulty||null,level:plan.difficulty?plan.level:plan.level??old?.level??null,
+      boss:plan.boss||old?.boss||null,types:plan.types||old?.types||[],typesComplete:plan.typesComplete,
+      retainedBoss:!plan.boss&&Boolean(old?.boss),retainedTypes:!plan.types&&Boolean(old?.types.length),
+      retainedMode:!plan.mode&&Boolean(old?.mode),retainedDifficulty:!plan.difficulty&&Boolean(old?.difficulty),retainedLevel:!plan.difficulty&&!plan.level&&Boolean(old?.level)});
     state.catalogQueries.enemies='';
-    return{ok:true};
+    return{ok:true,plan,session:state.sessionContext};
   }
-  window.GARRISON_WORKSPACE = { create, restore, openCompare, closeCompare, isBanned, addMember, removeMember, setTransfer, progress, allianceProgress, applyRecognition, markedItemKey, normalizeMarkedItems, searchMarkedItems, markedItemStatus };
+  window.GARRISON_WORKSPACE = { create, restore, openCompare, closeCompare, isBanned,operatorStatus, addMember, removeMember, setTransfer, progress, allianceProgress, applyRecognition,recognitionPlan, markedItemKey, normalizeMarkedItems, searchMarkedItems, markedItemStatus };
 })();

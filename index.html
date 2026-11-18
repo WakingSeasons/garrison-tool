@@ -7,23 +7,23 @@
   <meta name="description" content="明日方舟卫戍协议·规程玩家工具：按特质与联动检索干员，并排配队、管理本局 BAN 位，查询敌人、策略与装备，支持截图识别本局信息。">
   <title>卫戍协议·规程 · 盟约与阵容研究</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='8' fill='%23212c32'/%3E%3Cpath d='M11 10h18L20 30Z' fill='%2376baa9'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="./styles.css?v=1.0.1">
-  <link rel="stylesheet" href="./capture/page.css?v=1.0.3">
+  <link rel="stylesheet" href="./styles.css?v=1.1.0">
+  <link rel="stylesheet" href="./capture/page.css?v=1.1.0">
   <script src="./data.js" defer></script>
   <script src="./alliances.js" defer></script>
-  <script src="./strategy-data.js?v=1.0.1" defer></script>
+  <script src="./strategy-data.js?v=1.1.0" defer></script>
   <script src="./equipment-data.js" defer></script>
   <script src="./research-data.js" defer></script>
   <script src="./research-query.js" defer></script>
-  <script src="./filters.js?v=1.0.1" defer></script>
-  <script src="./workspace.js?v=1.0.1" defer></script>
+  <script src="./filters.js?v=1.1.0" defer></script>
+  <script src="./workspace.js?v=1.1.0" defer></script>
   <script src="./equipment.js" defer></script>
-  <script src="./enemy-data.js?v=1.0.1" defer></script>
-  <script src="./enemies.js?v=1.0.1" defer></script>
-  <script src="./app.js?v=1.0.3" defer></script>
+  <script src="./enemy-data.js?v=1.1.0" defer></script>
+  <script src="./enemies.js?v=1.1.0" defer></script>
+  <script src="./app.js?v=1.1.0" defer></script>
   <script src="./research.js" defer></script>
-  <script src="./site-info.js?v=1.0.1" defer></script>
-  <script type="module" src="./capture/page.mjs?v=1.0.5"></script>
+  <script src="./site-info.js?v=1.1.0" defer></script>
+  <script type="module" src="./capture/page.mjs?v=1.1.0"></script>
 </head>
 <body>
   <header class="site-header">
@@ -99,16 +99,17 @@
     </aside>
     <main class="encyclopedia-content" aria-label="规程百科内容">
       <section class="catalog-page" data-section-panel="capture" aria-labelledby="capture-title" hidden>
-        <div class="catalog-heading"><p class="eyebrow">SCREENSHOT READER</p><h2 id="capture-title">截图识别 <span class="capture-trial">试用</span></h2><p>先识别本局信息，核对后再套用到 BAN 位与敌方资料。</p></div>
+        <div class="catalog-heading"><p class="eyebrow">SCREENSHOT READER</p><h2 id="capture-title">截图识别 <span class="capture-trial">试用</span></h2><p>支持开局与暂停截图；核对或修正后，分别套用已确认内容。</p></div>
         <div class="catalog-results capture-content">
           <div class="capture-workspace"><section class="capture-box"><h3>上传本局截图 <small id="capture-count">0 / 2</small></h3>
             <label id="capture-drop" class="capture-drop" tabindex="0" role="button" aria-label="上传本局截图"><input id="capture-files" type="file" accept="image/png,image/jpeg,image/webp,image/bmp" multiple hidden><strong>＋ 点击上传或拖入截图</strong><span>也可以 Ctrl+V 粘贴 · 最多两张</span><small>一张拍全就够，缺失时再补第二张</small></label>
             <p id="capture-error" class="capture-error" role="alert" hidden></p><div id="capture-previews" class="capture-previews"></div>
             <div class="capture-actions"><button type="button" class="primary-button" id="capture-run" disabled>开始识别</button><button type="button" class="text-button" id="capture-clear" disabled>清空截图</button></div><p id="capture-progress" class="capture-note" role="status" aria-live="polite">图片仅在当前浏览器处理，识别资源按需加载。</p>
-            <p class="capture-note">保留左上角难度、全部盟约名称和右侧敌方信息。两张截图应来自同一局、同一次盟约选择。</p>
+            <p class="capture-note">尽量拍清盟约名称和右侧敌方信息。暂停页没有模式／难度也可使用；两张截图应来自同一局、同一次盟约选择。</p>
             <section id="capture-mark-editor" class="capture-mark-editor" aria-labelledby="capture-mark-title"><div class="capture-mark-heading"><h4 id="capture-mark-title">标记干员与盟约</h4><small id="capture-mark-count">7 项</small></div><p class="capture-note">标记你关心的对象，识别后查看哪些被 BAN。名单独立保存在本机，可随时增删。</p><label class="capture-mark-label" for="capture-mark-search">添加标记</label><input id="capture-mark-search" type="search" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="capture-mark-suggestions" placeholder="输入干员或盟约名字…" autocomplete="off"><div id="capture-mark-suggestions" class="capture-mark-suggestions" role="listbox" aria-label="可添加的干员与盟约" hidden></div><div id="capture-mark-selected" class="capture-mark-selected" aria-label="已标记干员与盟约"></div><p id="capture-mark-empty" class="capture-note" hidden>当前没有标记对象，可以输入名字添加。</p></section>
           </section><section class="capture-box"><div class="capture-result-heading"><h3>文字结果</h3><button type="button" class="text-button" id="capture-copy" disabled>复制文字</button></div><p id="capture-status" class="capture-status" aria-live="polite">等待识别</p><div id="capture-mark-results" class="capture-mark-results" aria-live="polite" hidden></div><pre id="capture-result" tabindex="0"></pre>
-            <button type="button" class="primary-button capture-apply" id="capture-apply" disabled>套用到本局</button><p id="capture-apply-state" class="capture-note" role="status" aria-atomic="true"></p><div id="capture-next" class="capture-actions" hidden><button type="button" class="text-button" data-open-recognized-bans>前往干员 BAN 筛选 ↗</button><button type="button" class="text-button" data-encyclopedia-section="enemies">前往敌方资料 · 本局 ↗</button></div><p class="capture-note">BAN 状态按盟约推断，未直接识别禁用干员名单；本季规则细节待核实，以游戏为准。</p>
+            <details id="capture-editor" class="capture-editor" hidden><summary>修正／补全 <small>对照原图修改</small><span aria-hidden="true">⌄</span></summary><div id="capture-editor-fields"></div></details>
+            <p id="capture-plan" class="capture-note" role="status" hidden></p><button type="button" class="primary-button capture-apply" id="capture-apply" disabled>套用已识别内容</button><p id="capture-apply-state" class="capture-note" role="status" aria-atomic="true"></p><div id="capture-next" class="capture-actions" hidden><button type="button" class="text-button" data-open-recognized-bans>前往干员 BAN 筛选 ↗</button><button type="button" class="text-button" data-encyclopedia-section="enemies">前往敌方资料 · 本局 ↗</button></div><p class="capture-note">BAN 状态按盟约推断，未直接识别禁用干员名单；本季规则细节待核实，以游戏为准。</p>
             <details id="capture-raw-panel" hidden><summary>原始识别文字</summary><pre id="capture-raw"></pre></details>
           </section></div>
           <section class="capture-examples"><h3>正确截图示范 <small>点击放大查看</small></h3><div class="capture-example-grid">
@@ -164,6 +165,7 @@
       <section class="catalog-page" data-section-panel="enemies" aria-labelledby="enemy-report-title" hidden>
         <div class="catalog-heading"><p class="eyebrow">ENEMY RECORDS</p><h2 id="enemy-report-title">敌方资料</h2><p>按 Boss 和特训类别查看敌人，点击头像或名字前往 PRTS。</p></div>
         <div class="catalog-controls enemy-catalog-controls"><div class="enemy-category-options" role="group" aria-label="敌人分类"></div><span class="catalog-count" id="enemy-report-count" aria-live="polite"></span></div>
+        <p id="enemy-session-review" class="session-review" hidden></p>
         <div class="catalog-results" id="enemy-report-results" tabindex="0" aria-label="敌方资料检索结果"></div>
         <footer class="catalog-footer enemy-catalog-footer"><span>候选敌人按出怪战力参考值由低到高排列，具体出怪随回合与随机结果变化。</span><a href="https://closure.wiki/zh-cn/stronghold-protocol/3" target="_blank" rel="noopener noreferrer">可露希尔 Wiki ↗</a><a href="https://github.com/sganggs/Stronghold-Protocol/tree/master/data/versions/act3autochess-v3_1" target="_blank" rel="noopener noreferrer">本季出怪配置 ↗</a></footer>
       </section>
@@ -267,7 +269,7 @@
       <li>
         <span class="feature-number" aria-hidden="true">06</span>
         <h3>截图识别 · 试用</h3>
-        <p>上传、拖入或粘贴 1–2 张本局截图，在浏览器本地输出文字。核对完整结果后，一键套用到 BAN 位与敌方资料。</p>
+        <p>上传 1–2 张开局或暂停截图，本地输出文字；可展开「修正／补全」，再套用确认内容。未识别项目沿用原设置并标记待核对。</p>
       </li>
       <li>
         <span class="feature-number" aria-hidden="true">07</span>
@@ -296,7 +298,11 @@
     </div>
     <ol class="release-history">
       <li>
-        <div class="release-heading"><h3>v1.0.5</h3><span class="release-latest">当前版本</span><time datetime="2026-11-16">2026-11-16</time></div>
+        <div class="release-heading"><h3>v1.1.0</h3><span class="release-latest">当前版本</span><time datetime="2026-11-18">2026-11-18</time></div>
+        <ul><li>支持暂停截图和「套用已识别内容」，模式、难度缺失不再阻止已确认字段使用。</li><li>新增折叠「修正／补全」，可编辑模式、难度、Boss、特训类别和盟约状态。</li><li>冲突字段逐项确认；未识别字段沿用旧值并标记待核对，未知盟约不会误隐藏干员。</li><li>套用确认与敌方“本局”分别说明更新、沿用和数量未核对状态，刷新后继续保留。</li></ul>
+      </li>
+      <li>
+        <div class="release-heading"><h3>v1.0.5</h3><time datetime="2026-11-16">2026-11-16</time></div>
         <ul><li>特训类别首轮未读全时，自动对未识别行的类别名称做局部补读，减少前缀和鼠标指针干扰。</li><li>补读结果按原图顺序展示；仍未读出的类别保留待确认，不按数量猜测补齐。</li></ul>
       </li>
       <li>

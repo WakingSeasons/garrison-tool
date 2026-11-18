@@ -1,4 +1,4 @@
-import { CORE, ADDON, clean, parseOcrLines } from './model.mjs?v=1.0.4';
+import { CORE, ADDON, clean, parseOcrLines } from './model.mjs?v=1.1.0';
 import { signature,matchSignature } from './glyphs.mjs';
 let workerPromise;
 let log=()=>{};

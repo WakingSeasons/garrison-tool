@@ -92,7 +92,7 @@
       <details class="ban-settings">
         <summary><span>本局 BAN 位</span><small class="ban-selection-count"></small><span class="details-chevron" aria-hidden="true">⌄</span></summary>
         <div class="ban-settings-content">
-          <p>按开局名单选中不完整或未开放的盟约。参考上一期规则，所属盟约全被选中的干员标红。两侧共用。</p>
+          <p>按游戏名单选中不可用盟约。所属盟约全被选中的干员标红，两侧共用；判定参考既有规则。</p><p class="ban-review" hidden></p>
           ${groupMarkup('bans', banItems(data.coreAlliances), '核心 BAN')}
           ${groupMarkup('bans', banItems(data.addonAlliances), '独立 BAN')}
           <div class="ban-settings-actions">
@@ -147,7 +147,7 @@
     const elite = !!operator.elite && pane.elites.includes(operator.id);
     const member = state.members.find(member => member.id === operator.id);
     const canJoin = operator.rosterEligible !== false;
-    const banned = model.isBanned(operator, state.bannedAlliances);
+    const availability=model.operatorStatus(operator,state),banned=availability==='banned';
     const effects = analysis.operators[operator.id].effects;
     const terms = [...new Set(effects.flatMap(effect => effect.termIds))];
     const trait = elite ? operator.elite.text : operator.ordinary.text;
@@ -157,7 +157,7 @@
       <div class="operator-heading">
         <div class="operator-identity">
           ${avatarMarkup(operator, 34)}
-          <div class="name-line"><h3>${operator.name}</h3><span class="tier-badge">${tierLabel(operator.tier)}</span>${banned ? '<span class="ban-tag">BAN</span>' : ''}</div>
+          <div class="name-line"><h3>${operator.name}</h3><span class="tier-badge">${tierLabel(operator.tier)}</span>${banned ? '<span class="ban-tag">BAN</span>' : availability==='unknown'?'<span class="ban-pending-tag">BAN 待核对</span>':''}</div>
         </div>
         <div class="card-alliances">${operator.alliances.map(name => `<button type="button" class="alliance-badge ${data.coreAlliances.includes(name) ? 'core-badge' : 'addon-badge'}" data-compare-alliance="${name}" title="在右侧查看${name}的效果与干员">${name}</button>`).join('')}</div>
       </div>
@@ -325,6 +325,10 @@
       const value = filterValue(kind, button.dataset.value);
       const selected = button.dataset.value === 'all' ? !values.length : values.includes(value);
       button.classList.toggle('selected', selected); button.setAttribute('aria-pressed', String(selected));
+      if(kind==='bans'){
+        const pending=state.unconfirmedAlliances.includes(value);button.classList.toggle('is-unconfirmed',pending);
+        if(pending)button.setAttribute('aria-label',value+'，待核对，当前沿用原设置');else button.removeAttribute('aria-label');
+      }
     }
     for (const button of node.querySelectorAll('[data-mode]')) {
       const selected = button.dataset.mode === f.selectionMode;
@@ -340,13 +344,17 @@
     const banCount = state.bannedAlliances.length;
     const filterCount = chips.length ? `${chips.length} 项已选` : '阶级 · 盟约 · 特质 · 联动';
     node.querySelector('.filter-selection-count').textContent = banCount ? `${filterCount} · BAN ${banCount}` : filterCount;
-    node.querySelector('.ban-selection-count').textContent = banCount ? `${banCount} 项已选` : '未设置';
-    node.querySelector('[data-clear-bans]').hidden = !banCount;
+    const pendingCount=state.unconfirmedAlliances.length;
+    node.querySelector('.ban-selection-count').textContent = (banCount ? `${banCount} 项已选` : '未选 BAN')+(pendingCount?` · ${pendingCount} 项待核对`:'');
+    if(pendingCount)node.querySelector('.filter-selection-count').textContent+=' · 待核对 '+pendingCount;
+    const review=node.querySelector('.ban-review');review.hidden=!pendingCount;
+    review.textContent=pendingCount?`待核对：${state.unconfirmedAlliances.join('、')}。这些项目沿用原设置，不作为已确认的 BAN 判定，也不会因此隐藏干员。可点击切换并确认，或在截图识别中修正。`:'';
+    node.querySelector('[data-clear-bans]').hidden = !banCount&&!pendingCount;
     node.querySelector('[data-hide-banned]').checked = state.hideBannedOperators;
     renderAllianceReference(node, pane);
     const candidates = data.operators.filter(operator => filter.matches(operator, f));
     const matches = state.hideBannedOperators
-      ? candidates.filter(operator => !model.isBanned(operator, state.bannedAlliances))
+      ? candidates.filter(operator => model.operatorStatus(operator,state)!=='banned')
       : candidates;
     matches.sort((a, b) => data.tiers.indexOf(a.tier) - data.tiers.indexOf(b.tier));
     const hiddenCount = candidates.length - matches.length;
@@ -378,13 +386,13 @@
       const gear = equipment.byName.get(member.transferEquipment);
       const granted = gear?.grantAlliance;
       const grantLabel = granted && operator.alliances.includes(granted) ? `已有${granted}` : `＋${granted}`;
-      const banned = model.isBanned(operator, state.bannedAlliances);
+      const availability=model.operatorStatus(operator,state),banned=availability==='banned';
       return `<article class="roster-member${banned ? ' is-banned' : ''}" data-member-id="${member.id}">
         ${avatarMarkup(operator, 36)}
         <div>
           <strong>${operator.name}</strong>
           <span>${operator.alliances.join(' · ')}</span>
-          ${banned ? '<span class="ban-tag">BAN</span>' : ''}
+          ${banned ? '<span class="ban-tag">BAN</span>' : availability==='unknown'?'<span class="ban-pending-tag">BAN 待核对</span>':''}
           ${granted ? `<span class="transfer-tag">${grantLabel} · 占${equipment.transferSlots}格</span>` : ''}
         </div>
         <button type="button" class="member-state ${member.elite ? 'elite' : ''}" data-member-elite="${member.id}" aria-pressed="${member.elite}" aria-label="切换阵容中${operator.name}的普通精锐状态">${member.elite ? '精锐' : '普通'}</button>
@@ -423,21 +431,24 @@
   }
   document.addEventListener('garrison:apply-recognition',event=>{
     const result=model.applyRecognition(state,event.detail);
-    if(result.ok){render();notify('已套用本局 BAN 位与敌方筛选');}
-    const message=result.ok?[
-      '✓ 已套用到以下位置',
-      '',
-      '卫戍干员 → 筛选条件 → 本局 BAN 位',
-      state.bannedAlliances.length?`已设置 ${state.bannedAlliances.length} 个不可用盟约：${state.bannedAlliances.join('、')}`:'本局 BAN 位已清空：没有不可用盟约。',
-      '左右检索共用，按现有规则标红或隐藏对应干员。',
-      '',
-      '敌方资料 → 本局',
-      `Boss：${state.sessionContext.boss}`,
-      `特训敌人：${state.sessionContext.types.join('、')}`,
-      '',
-      '原有阵容、左右检索条件与标记名单已保留。'
-    ].join('\n'):result.error;
-    document.dispatchEvent(new CustomEvent('garrison:recognition-applied',{detail:{ok:result.ok,message}}));
+    if(result.ok){render();notify('已套用确认内容，未识别项目已标记待核对');}
+    let message=result.error;
+    if(result.ok){
+      const p=result.plan,s=result.session,inactive=p.alliances.filter(a=>a.state==='inactive').map(a=>a.name);
+      message=[
+        '✓ 已套用到以下位置'+(p.partial?'（含待核对项目）':''),'',
+        '卫戍干员 → 筛选条件 → 本局 BAN 位','已更新 '+p.alliances.length+'/26 个盟约状态。',
+        inactive.length?'本次确认 BAN：'+inactive.join('、'):p.alliances.length===26?'本局 BAN 位已清空：没有不可用盟约。':'本次已确认项目中没有 BAN。',
+        p.unresolvedAlliances.length?'沿用原设置、待核对：'+p.unresolvedAlliances.join('、'):'左右检索共用，按现有规则标红或隐藏对应干员。','',
+        '敌方资料 → 本局',
+        p.boss?'Boss已更新：'+p.boss:s?.boss?'Boss沿用：'+s.boss+'（待核对）':'Boss未识别，未写入。',
+        p.types?'特训已更新：'+p.types.join('、')+(p.typesComplete?'':'（数量未核对完整）'):s?.types.length?'特训沿用：'+s.types.join('、')+'（待核对）':'特训未确认，未写入。',
+        p.mode?'模式：'+p.mode:s?.retainedMode?'模式沿用：'+s.mode+'（待核对，未用于本次类别数量核对）':'模式未指定，未按三类判定。',
+        s?.retainedDifficulty?'难度沿用：'+s.difficulty+'（待核对）':'','',
+        '原有阵容、左右检索条件与标记名单已保留。'
+      ].join('\n');
+    }
+    document.dispatchEvent(new CustomEvent('garrison:recognition-applied',{detail:{ok:result.ok,message,hasSession:Boolean(state.sessionContext?.boss||state.sessionContext?.types.length)}}));
   });
   function addMember(id, pane) {
     const operator = data.operators.find(operator => operator.id === id);
@@ -559,6 +570,7 @@
     }
     if (button.hasAttribute('data-clear-bans')) {
       state.bannedAlliances = [];
+      state.unconfirmedAlliances = [];
       render();
       return;
     }
@@ -569,6 +581,7 @@
       const rawValue = button.dataset.value;
       if (key === 'bans') {
         state.bannedAlliances = filter.toggleSelection(state.bannedAlliances, rawValue, 'any');
+        state.unconfirmedAlliances=state.unconfirmedAlliances.filter(name=>name!==rawValue);
         render();
         return;
       }
