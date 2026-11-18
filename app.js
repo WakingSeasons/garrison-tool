@@ -474,6 +474,7 @@
     if (!operator) return;
     const first = !state.members.length;
     if (!model.addMember(state, id, pane?.elites.includes(id))) { notify(`${operator.name}已在阵容，不重复计数`); return; }
+    window.GARRISON_USAGE?.record('roster');
     if (first) state.rosterOpen = true;
     render(); notify(`已加入${operator.name} · 阵容 ${state.members.length} 人`);
   }

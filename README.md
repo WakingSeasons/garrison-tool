@@ -4,7 +4,7 @@
 
 《明日方舟》**卫戍协议·规程**的非官方玩家工具，由 [WakingSeasons](https://github.com/WakingSeasons) 制作和维护。支持电脑与手机浏览器，无需登录。
 
-[打开在线工具](https://wakingseasons.github.io/garrison-tool/) · [本次更新：v1.3.0](docs/releases/v1.3.0.md) · [完整更新记录](CHANGELOG.md) · [反馈问题](https://github.com/WakingSeasons/garrison-tool/issues)
+[打开在线工具](https://wakingseasons.github.io/garrison-tool/) · [本次更新：v1.3.1](docs/releases/v1.3.1.md) · [完整更新记录](CHANGELOG.md) · [反馈问题](https://github.com/WakingSeasons/garrison-tool/issues)
 
 ## 能做什么
 
@@ -54,6 +54,7 @@
 - **首次识别较慢／加载失败**：等待识别资源加载，检查网络后重试；设备性能较弱时可用电脑浏览器。资料检索与手动 BAN 功能可单独使用。
 - **敌人排序**：按本季出怪配置中的战力参考值排列，不代表绝对实战难度。分类展示候选池，实际出怪仍随回合、难度与随机结果变化。
 - **本机保存**：不同设备、浏览器及网站域名之间不自动同步；清除网站数据会删除本机保存。多套阵容保存／预设和站位编辑仍待制作。
+- **访问统计**：正式站用 GoatCounter 统计访问和少量功能使用次数，可以在「特色介绍」关闭此浏览器的后续统计。[统计与隐私说明](docs/usage-analytics.md)
 - **反馈错误**：请在 [Issues](https://github.com/WakingSeasons/garrison-tool/issues) 提供浏览器、设备、问题步骤；识别问题附原始截图和错误结果会更方便排查，注意遮去无关个人信息。
 
 ## 资料与致谢

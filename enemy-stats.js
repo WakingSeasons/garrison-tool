@@ -159,6 +159,7 @@
       phase.value = 'normal';
       draw();
       dialog.showModal();
+      if (data.leaders[entry.id]) window.GARRISON_USAGE?.record('boss');
     }
   };
 })();

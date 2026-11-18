@@ -23,9 +23,10 @@
   <script src="./boss-route-data.js?v=1.2.0" defer></script>
   <script src="./boss-routes.js?v=1.2.0" defer></script>
   <script src="./enemy-stats-data.js?v=1.2.0" defer></script>
-  <script src="./enemy-stats.js?v=1.2.0" defer></script>
+  <script src="./usage.js?v=1.3.1" data-goatcounter-site="garrison-tool" defer></script>
+  <script src="./enemy-stats.js?v=1.3.1" defer></script>
   <script src="./enemies.js?v=1.2.0" defer></script>
-  <script src="./app.js?v=1.3.0" defer></script>
+  <script src="./app.js?v=1.3.1" defer></script>
   <script src="./research.js" defer></script>
   <script src="./site-info.js?v=1.1.0" defer></script>
   <script type="module" src="./capture/page.mjs?v=1.1.0"></script>
@@ -333,6 +334,10 @@
         <p>按角色、策略或数值搜索，展开「具体数值」查看倍率和使用次数。装备一览可按等阶查询，并提供联合效果、转职占位和合并方式。</p>
       </li>
     </ol>
+    <div class="info-intro" id="usage-settings" hidden>
+      <p>本工具使用 GoatCounter 统计网页访问和少量功能使用次数。统计不包含截图、识别文字、搜索词或阵容内容。<a href="https://www.goatcounter.com/help/privacy" target="_blank" rel="noopener noreferrer">统计隐私说明 ↗</a></p>
+      <label><input type="checkbox" id="usage-opt-out"> 不统计此浏览器的后续访问</label>
+    </div>
   </dialog>
   <dialog class="info-dialog" id="release-notes" aria-labelledby="release-notes-title">
     <div class="info-heading">
@@ -344,7 +349,11 @@
     </div>
     <ol class="release-history">
       <li>
-        <div class="release-heading"><h3>v1.3.0</h3><span class="release-latest">当前版本</span><time datetime="2026-11-19">2026-11-19</time></div>
+        <div class="release-heading"><h3>v1.3.1</h3><span class="release-latest">当前版本</span><time datetime="2026-11-19">2026-11-19</time></div>
+        <ul><li>接入网页访问和功能使用计数，包括套用本局信息、加入阵容和查看 Boss 波次。</li><li>在「特色介绍」中可以关闭此浏览器的后续统计。</li></ul>
+      </li>
+      <li>
+        <div class="release-heading"><h3>v1.3.0</h3><time datetime="2026-11-19">2026-11-19</time></div>
         <ul><li>为 28 项策略补充「具体数值」，包括倍率、随盟约层数变化的公式、升级节点和使用次数。</li><li>分开列出「黑白相易」的炎佑基础属性、6 炎继承与 9 炎效果，并附资料来源。</li><li>顶部搜索可检索补充数值。仅命中具体数值时，自动展开对应详情。</li></ul>
       </li>
       <li>
